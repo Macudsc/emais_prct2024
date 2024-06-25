@@ -1,0 +1,9 @@
+Django==4.2
+djangorestframework
+psycopg2-binary
+djongo
+python-telegram-bot
+pandas
+reportlab
+celery
+django-cors-headers
