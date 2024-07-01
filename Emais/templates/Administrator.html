@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Пользователи</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #ffebee;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #d32f2f;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        header nav a {
+            color: white;
+            text-decoration: none;
+            margin: 0 15px;
+            font-size: 18px;
+        }
+        header nav a:hover {
+            text-decoration: underline;
+        }
+        header button {
+            background-color: #a82323;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        header button:hover {
+            background-color: #851616;
+        }
+        .content {
+            padding: 20px;
+        }
+        .user-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .user-item {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .user-item h3 {
+            color: #d32f2f;
+            margin-top: 0;
+        }
+        .user-item p {
+            color: #555;
+        }
+        .user-item .buttons {
+            display: flex;
+            gap: 10px;
+        }
+        .user-item button {
+            background-color: #d32f2f;
+            color: white;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .user-item button:hover {
+            background-color: #a72222;
+        }
+        .sort-controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .sort-controls button {
+            background-color: #670000;
+            color: white;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            border-radius: 5px;
+        }
+        .sort-controls button:hover {
+            background-color: #2b0a0a;
+        }
+    </style>
+    <!-- Подключение Bootstrap CSS -->
+    <!--<link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet">-->
+</head>
+<body>
+    <header>
+        <nav>
+            <a href="#">ЕМАИС</a>
+            <a href="#">Моя информация</a>
+            <a href="#">Пользователи</a>
+            <a href="/api/" class="btn btn-primary">API</a>
+        </nav>
+    <!-- ====== -->
+        <!--<div class="container mt-5">
+          <div class="mt-3">
+              
+          </div>
+        </div>-->
+<!-- ========== -->
+        <button>Выход</button>
+    </header>
+    <div class="content">
+        <div class="sort-controls">
+            <button>Сортировать по имени</button>
+            <button>Сортировать по роли</button>
+        </div>
+        <div class="user-list">
+            <div class="user-item">
+                <div>
+                    <h3>Иван Иванов</h3>
+                    <p><strong>Роль:</strong> Врач</p>
+                </div>
+                <div class="buttons">
+                    <button>Изменить информацию</button>
+                    <button>Удалить пользователя</button>
+                </div>
+            </div>
+            <div class="user-item">
+                <div>
+                    <h3>Петр Петров</h3>
+                    <p><strong>Роль:</strong> Пациент</p>
+                </div>
+                <div class="buttons">
+                    <button>Изменить информацию</button>
+                    <button>Удалить пользователя</button>
+                </div>
+            </div>
+            <div class="user-item">
+                <div>
+                    <h3>Мария Смирнова</h3>
+                    <p><strong>Роль:</strong> Врач</p>
+                </div>
+                <div class="buttons">
+                    <button>Изменить информацию</button>
+                    <button>Удалить пользователя</button>
+                </div>
+            </div>
+            <div class="user-item">
+                <div>
+                    <h3>Анна Сидорова</h3>
+                    <p><strong>Роль:</strong> Пациент</p>
+                </div>
+                <div class="buttons">
+                    <button>Изменить информацию</button>
+                    <button>Удалить пользователя</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+  <!-- Подключение Bootstrap JS и зависимости -->
+  <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+</body>
+</html>
