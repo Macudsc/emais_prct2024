@@ -3,12 +3,11 @@
 Задание:
 https://joepepper.notion.site/95fb9c02299a44f4ae0d4de5b91498f6
 
-1. Выбор объекта реализации:
+Этапы:
 <br>https://docs.google.com/document/d/1si5UakF-CcEoS-tG0aMblcXqsk84lVSfO3nemFR6SYg/edit?usp=sharing
 
-2. Проектирование ИКС:
-
-4. Реализация (программирование, развертывание) ИКС:
+Google диск:
+<br>https://drive.google.com/drive/folders/17OyzDhIA2ToxNYw8rofAy9L6uW6cPGqj?usp=sharing
 
 ---
 
