@@ -9,10 +9,11 @@
   <h1>index templ</h1>
   <h2></h2>
   <h4>
+    <!--<a href="/index/{{item.id}}/"></a>-->
     {% for item in items %}
-
-    ID: {{item.id}} | Имя: {{item.name}} | Цена: {{item.price}} | {{ item.description }} <br>
-
+    <a href="{% url 'detail' item.id %}">
+      ID: {{item.id}} | Имя: {{item.name}} | Цена: {{item.price}} | {{ item.description }} <br>
+    </a>
     {% endfor %}
   </h4>
 </body>

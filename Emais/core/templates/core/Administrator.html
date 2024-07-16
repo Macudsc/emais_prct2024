@@ -1,147 +1,60 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Пользователи</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #ffebee;
-            margin: 0;
-            padding: 0;
-        }
-        header {
-            background-color: #d32f2f;
-            padding: 10px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        header nav a {
-            color: white;
-            text-decoration: none;
-            margin: 0 15px;
-            font-size: 18px;
-        }
-        header nav a:hover {
-            text-decoration: underline;
-        }
-        header button {
-            background-color: #a82323;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        header button:hover {
-            background-color: #851616;
-        }
-        .content {
-            padding: 20px;
-        }
-        .user-list {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-        .user-item {
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .user-item h3 {
-            color: #d32f2f;
-            margin-top: 0;
-        }
-        .user-item p {
-            color: #555;
-        }
-        .user-item .buttons {
-            display: flex;
-            gap: 10px;
-        }
-        .user-item button {
-            background-color: #d32f2f;
-            color: white;
-            border: none;
-            padding: 10px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-        .user-item button:hover {
-            background-color: #a72222;
-        }
-        .sort-controls {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        .sort-controls button {
-            background-color: #670000;
-            color: white;
-            border: none;
-            padding: 10px;
-            cursor: pointer;
-            font-size: 14px;
-            border-radius: 5px;
-        }
-        .sort-controls button:hover {
-            background-color: #2b0a0a;
-        }
-    </style>
-    <!-- Подключение Bootstrap CSS -->
-    <!--<link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet">-->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'core/Administrator.css' %}">
 </head>
 <body>
     <header>
         <nav>
-            <a href="#">ЕМАИС</a>
-            <a href="#">Моя информация</a>
-            <a href="#">Пользователи</a>
-            <a href="/api/" class="btn btn-primary">API</a>
+            <a class="navitem" href="/">ЕМАИС</a>
+            <a class="navitem" href="#">Моя информация</a>
+            <a class="navitem" href="#">Пользователи</a>
+            <a class="btn btn-info" href="/api/">API</a>
+        
+            <button>Выход</button>
         </nav>
-    <!-- ====== -->
-        <!--<div class="container mt-5">
-          <div class="mt-3">
-              
-          </div>
-        </div>-->
-<!-- ========== -->
-        <button>Выход</button>
     </header>
     <div class="content">
-        <div class="sort-controls">
-            <button>Сортировать по имени</button>
-            <button>Сортировать по роли</button>
+
+        <h1 class="admin_head">Список пользователей</h1>
+
+        <div class="sort-controls mb-3">
+            <div class="btn-group">
+                <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Сортировать
+                </button>
+                <div class="dropdown-menu">
+                    <a class="dropdown-item" href="?sort_by=first_name&sort_order=asc">По имени</a>
+                    <a class="dropdown-item" href="?sort_by=role&sort_order=asc">По роли</a>
+                </div>
+            </div>
+            {% if current_sort != 'id' %}
+            <a href="?clear_sort=true" class="btn btn-danger ml-2">Очистить сортировку</a>
+            {% endif %}
         </div>
+
+        
         <div class="user-list">
+            {% for user in users %}
             <div class="user-item">
                 <div>
-                    <h3>Иван Иванов</h3>
-                    <p><strong>Роль:</strong> Врач</p>
+                    <h3>{{ user.first_name }} {{ user.last_name }}</h3>
+                    <p><strong>Роль: </strong>{{ user.role }}</p>
                 </div>
                 <div class="buttons">
-                    <button>Изменить информацию</button>
+                    <button >Изменить информацию</button>
                     <button>Удалить пользователя</button>
                 </div>
             </div>
-            <div class="user-item">
-                <div>
-                    <h3>Петр Петров</h3>
-                    <p><strong>Роль:</strong> Пациент</p>
-                </div>
-                <div class="buttons">
-                    <button>Изменить информацию</button>
-                    <button>Удалить пользователя</button>
-                </div>
-            </div>
+            {% endfor %}
+
+            <!-- Старые данные -->
+            <!--<h1>---</h1>
             <div class="user-item">
                 <div>
                     <h3>Мария Смирнова</h3>
@@ -161,13 +74,13 @@
                     <button>Изменить информацию</button>
                     <button>Удалить пользователя</button>
                 </div>
-            </div>
+            </div>-->
         </div>
     </div>
     
-  <!-- Подключение Bootstrap JS и зависимости -->
-  <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js"></script>
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+    <!-- Подключение Bootstrap JS и зависимости -->
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
 </body>
 </html>

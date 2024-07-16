@@ -2,6 +2,12 @@ from rest_framework import viewsets
 from .models import User, Appointment, MedicalRecord
 from .serializers import UserSerializer, AppointmentSerializer, MedicalRecordSerializer
 
+import pandas as pd
+from django.http import HttpResponse
+
+from django.shortcuts import render
+from .models import Product, User
+
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
@@ -14,10 +20,7 @@ class MedicalRecordViewSet(viewsets.ModelViewSet):
     queryset = MedicalRecord.objects.all()
     serializer_class = MedicalRecordSerializer
 
-
-import pandas as pd
-from django.http import HttpResponse
-
+# основные функции
 def export_records_csv(request):
     records = MedicalRecord.objects.all().values()
     df = pd.DataFrame(records)
@@ -30,10 +33,6 @@ def export_records_pdf(request):
     # добавить экспорт в PDF с ReportLab
     pass
 
-
-from django.shortcuts import render
-from .models import Product
-
 def home(request):
     return render(request, 'core/home.html')
 
@@ -43,9 +42,32 @@ def patient_page(request):
 def doctor_page(request):
     return render(request, 'core/Doctor.html')
 
+# Подгрузка данных из БД
 def admin_page(request):
-    return render(request, 'core/Administrator.html')
+    sort_by = request.GET.get('sort_by', 'id')  # По умолчанию сортировка по ID
+    sort_order = request.GET.get('sort_order', 'asc')
 
+    if request.GET.get('clear_sort'):
+        sort_by = 'id'
+        sort_order = 'asc'
+    else:
+        if sort_by not in ['first_name', 'role', 'id']:
+            sort_by = 'id'
+        if sort_order == 'desc':
+            sort_by = f'-{sort_by}'
+    
+    users = User.objects.all().order_by(sort_by)
+    
+    context2 = {
+        'users': users,
+        'current_sort': request.GET.get('sort_by', 'id'),
+        'current_order': request.GET.get('sort_order', 'asc')
+    }
+    return render(request, 'core/Administrator.html', context=context2)
+
+
+
+# тестовые функции
 def index(request):
     #item=['patient', 'doc', 'admini']
     items=Product.objects.all()
@@ -54,8 +76,10 @@ def index(request):
     }
     return render(request, 'core/index.html', context)
 
-def indexItem(request, id):
-    return HttpResponse("Your item id is: " + str(id))
-
-def contacts(request):
-    return render(request, 'core/contacts.html')
+def indexItem(request, my_id):
+    #return HttpResponse("Your item id is: " + str(id))
+    item=Product.objects.get(id=my_id)
+    context={
+        'item':item,
+    }
+    return render(request, 'core/detail.html', context=context)
