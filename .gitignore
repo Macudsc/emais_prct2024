@@ -2,3 +2,4 @@ sh.sh
 venv
 **/__pycache__/
 #Emais/testapp
+node_modules
