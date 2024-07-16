@@ -17,7 +17,6 @@ class MedicalRecordViewSet(viewsets.ModelViewSet):
 
 import pandas as pd
 from django.http import HttpResponse
-from .models import MedicalRecord
 
 def export_records_csv(request):
     records = MedicalRecord.objects.all().values()
@@ -33,6 +32,30 @@ def export_records_pdf(request):
 
 
 from django.shortcuts import render
+from .models import Product
 
 def home(request):
-    return render(request, 'home.html')
+    return render(request, 'core/home.html')
+
+def patient_page(request):
+    return render(request, 'core/patient.html')
+
+def doctor_page(request):
+    return render(request, 'core/Doctor.html')
+
+def admin_page(request):
+    return render(request, 'core/Administrator.html')
+
+def index(request):
+    #item=['patient', 'doc', 'admini']
+    items=Product.objects.all()
+    context={
+        'items':items,
+    }
+    return render(request, 'core/index.html', context)
+
+def indexItem(request, id):
+    return HttpResponse("Your item id is: " + str(id))
+
+def contacts(request):
+    return render(request, 'core/contacts.html')

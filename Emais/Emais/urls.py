@@ -1,20 +1,3 @@
-"""
-URL configuration for Emais project.
-
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/4.2/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
-"""
-
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
@@ -25,9 +8,11 @@ router.register(r'users', UserViewSet)
 router.register(r'appointments', AppointmentViewSet)
 router.register(r'medical_records', MedicalRecordViewSet)
 
-from core.views import export_records_csv, export_records_pdf
+#from core.views import export_records_csv, export_records_pdf, home, patient_page, doctor_page, admin_page, items
+from core.views import *
+#from core import views
 
-from core.views import home  # Замените `your_app_name` на имя вашего приложения
+from testapp import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -35,4 +20,11 @@ urlpatterns = [
     path('export/csv/', export_records_csv),
     path('export/pdf/', export_records_pdf),
     path('', home, name='home'),  # Корневой URL
+    path('hello/',views.index),
+    path('patient/myinfo/',patient_page),
+    path('doctor/mypatients/',doctor_page),
+    path('administrator/myusers/',admin_page),
+    path('contacts/',contacts),
+    path('index/',index),
+    path('index/<int:id>/',indexItem),
 ]

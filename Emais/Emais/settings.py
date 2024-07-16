@@ -100,7 +100,7 @@ DATABASES = {
     },
     'mongo': {
         'ENGINE': 'djongo',
-        'NAME': 'health_documents',
+        'NAME': 'emais_db_mon',
         'ENFORCE_SCHEMA': False,
         'CLIENT': {
             'host': 'localhost',

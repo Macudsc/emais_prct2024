@@ -23,3 +23,12 @@ class MedicalRecord(models.Model):
     patient = models.ForeignKey(User, related_name='medical_records', on_delete=models.CASCADE)
     document = models.FileField(upload_to='medical_records/')
     created_at = models.DateTimeField(auto_now_add=True)
+
+class Product(models.Model):
+    name=models.CharField(max_length=100)
+    price=models.IntegerField()
+    description=models.CharField(max_length=200)
+
+    # меняем имя текущего экземпляра
+    def __str__(self) -> str: # Чтобы возвращался строчный тип
+        return self.name

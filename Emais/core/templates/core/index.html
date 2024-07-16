@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contacts</title>
+</head>
+<body>
+  <h1>index templ</h1>
+  <h2></h2>
+  <h4>
+    {% for item in items %}
+
+    ID: {{item.id}} | Имя: {{item.name}} | Цена: {{item.price}} | {{ item.description }} <br>
+
+    {% endfor %}
+  </h4>
+</body>
+</html>
