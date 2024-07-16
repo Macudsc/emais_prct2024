@@ -125,3 +125,14 @@ header button:hover {
   color: #a72222;
   padding-bottom: 4px;
 }
+
+.admin-tools{
+  /*align-items: center;*/
+  padding: 20px;
+  margin: 0px auto 20px auto;
+  /*display: block;*/
+  width: 75%;
+  border: solid;
+  background-color: #fff;
+  /*color: white;*/
+}

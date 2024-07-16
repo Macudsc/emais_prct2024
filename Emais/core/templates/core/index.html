@@ -1,22 +1,25 @@
+{% extends "core/base.html" %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Contacts</title>
-  <link rel="stylesheet" href="{% static 'core/styles.css' %}">
-</head>
-<body>
-  <nav>
-    <div>
-      <div>
-        <div>
-          <div class="flex">
-            <img class="h-32 w-32" src="{% static 'core/images/shop.gif' %}" alt="logo"/>
-            <span class="text-xl">Pro shop</span>
-            <!--<img class="h-8 w-8" src="{% static 'core/images/sho2.jpg' %}" />-->
+
+{% block content %}
+  <nav class="bg-white shadow-lg text-black">
+    <div class="max-w-6x1 mx-auto px-4">
+      <div class="flex justify-between">
+        <div class="flex space-x-7">
+          <div>
+            <a href="#" class="flex items-center px-2 py-4">
+              <img class="h-24 w-24" src="{% static 'core/images/shop.gif' %}" alt="logo"/>
+              <span class="text-gray-500 font-semibold text-xl">Pro med</span>
+              <!--<img class="h-8 w-8" src="{% static 'core/images/sho2.jpg' %}" />-->
+            </a>
           </div>
+          
+          <div class="items-center flex space-x-1">
+            <a href="#" class="py-4 px-2 text-gray-500 font-semibold border-b-4 border-green-500">Home</a>
+            <a href="#" class="py-4 px-2 text-gray-500 font-semibold">About</a>
+            <a href="#" class="py-4 px-2 text-gray-500 font-semibold">Home</a>
+          </div>
+
         </div>
       </div>
     </div>
@@ -29,5 +32,4 @@
     </a>
     {% endfor %}
   </h4>
-</body>
-</html>
+{% endblock content %}
