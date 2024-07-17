@@ -7,3 +7,4 @@ pandas
 reportlab
 celery
 django-cors-headers
+Pillow
