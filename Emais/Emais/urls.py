@@ -2,6 +2,8 @@ from django.contrib import admin
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from core.views import UserViewSet, AppointmentViewSet, MedicalRecordViewSet
+from django.conf.urls.static import static
+from django.conf import settings
 
 router = DefaultRouter()
 router.register(r'users', UserViewSet)
@@ -34,3 +36,5 @@ urlpatterns = [
     path('index/',index),
     path('<int:my_id>/',indexItem, name="detail"),
 ]
+
+urlpatterns+=static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

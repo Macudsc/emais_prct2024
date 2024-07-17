@@ -7,6 +7,12 @@
     {% for item in items %}
     <a href="{% url 'detail' item.id %}">
       ID: {{item.id}} | Имя: {{item.name}} | Цена: {{item.price}} | {{ item.description }} <br>
+
+      {% if item.image %}
+        <img src="{{item.image.url}}" alt="">
+      {% else %}
+        <p>Изображение отсутствует</p>
+      {% endif %}
     </a>
     {% endfor %}
   </h4>
