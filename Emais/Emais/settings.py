@@ -45,7 +45,7 @@ INSTALLED_APPS = [
     'django.contrib.humanize',
 
     'core',
-
+    'patient',
 ]
 
 MIDDLEWARE = [
@@ -118,17 +118,23 @@ DATABASES = {
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
+    #{
+    #    "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
+    #},
+    #{
+    #    "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
+    #},
+    #{
+    #    "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
+    #},
+    #{
+    #    "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
+    #},
     {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
+        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        'OPTIONS': {
+            'min_length': 1,
+        }
     },
 ]
 
@@ -150,10 +156,10 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 #STATIC_URL = '/static/'
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'core', 'static'),
-    # Другие директории, если необходимо
-]
+#STATICFILES_DIRS = [
+#    os.path.join(BASE_DIR, 'core', 'static'),
+#    # Другие директории, если необходимо
+#]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field

@@ -1,0 +1,21 @@
+{% extends "core/base.html" %}
+
+{% block content %}
+<div class="ml-[200px]">
+    <h1 class="text-2xl m-10 font-bold text-green-600"> Add New Item Below</h1>
+    <form class="w-1/3 bg-white shadow-md m-10 px-8 py-8 " method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+        <div class="mb-4 ">
+            <label class="block text-gray-700 text-md font-bold mb-2" for="name">Имя пацинта</label>
+            <input class="shadow appearance-none border rounded py-2 px-3 mr-10 text-gray-700" type="text" placeholder="Введите имя пациента" name="name" id="name">
+            <label class="block text-gray-700 text-md font-bold mb-2 mt-2" for="price">Описание приёма</label>
+            <input class="shadow appearance-none border rounded py-2 px-3 mr-10 text-gray-700" type="text" placeholder="Введите описание" name="price" id="price">
+            <label class="block text-gray-700 text-md font-bold mb-2 mt-2" for="description">Заключение</label>
+            <input class="shadow appearance-none border rounded py-2 px-3 mr-10 text-gray-700" type="text" placeholder="Введите заключение" name="description" id="description">
+            <input class="block mt-4" type="file" accept="image/*" name="upload" id="upload">
+            <button class="block bg-green-600 text-white p-3 mt-4" type="submit" name="Add Item" value="Add Item">Добавить исследование</button>
+        </div>
+    </form>
+</div>
+
+{% endblock content %}

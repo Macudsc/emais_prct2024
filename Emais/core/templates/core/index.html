@@ -13,7 +13,7 @@
     <div class="p-10 grid grid-cols-1 sm:grid-cols-1 md:grid-cols-3 xl:grid-cols-3 lg:grid-cols-3 gap-3">
     
       {% for item in items %}
-      <a href="{% url 'detail' item.id %}">
+      <a href="{% url 'core:detail' item.id %}">
         <div class="rounded overflow-hidden  shadow-lg">
           <div class="h-[200px] flex justify-center items-center pt-4">
             <img class="object-contain h-full w-full" src="{{item.image.url}}" alt="">

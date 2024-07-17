@@ -1,33 +1,35 @@
-from rest_framework import viewsets
-from .models import User, Appointment, MedicalRecord
-from .serializers import UserSerializer, AppointmentSerializer, MedicalRecordSerializer
+#from rest_framework import viewsets
+#from .models import User, Appointment, MedicalRecord
+#from .serializers import UserSerializer, AppointmentSerializer, MedicalRecordSerializer
 
-import pandas as pd
-from django.http import HttpResponse
+#import pandas as pd
+#from django.http import HttpResponse
 
-from django.shortcuts import render
+from django.conf import settings
+from django.shortcuts import render, redirect
 from .models import Product, User
 
-class UserViewSet(viewsets.ModelViewSet):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
+#class UserViewSet(viewsets.ModelViewSet):
+#    queryset = User.objects.all()
+#    serializer_class = UserSerializer
 
-class AppointmentViewSet(viewsets.ModelViewSet):
-    queryset = Appointment.objects.all()
-    serializer_class = AppointmentSerializer
+#class AppointmentViewSet(viewsets.ModelViewSet):
+#    queryset = Appointment.objects.all()
+#    serializer_class = AppointmentSerializer
 
-class MedicalRecordViewSet(viewsets.ModelViewSet):
-    queryset = MedicalRecord.objects.all()
-    serializer_class = MedicalRecordSerializer
+#class MedicalRecordViewSet(viewsets.ModelViewSet):
+#    queryset = MedicalRecord.objects.all()
+#    serializer_class = MedicalRecordSerializer
 
 # основные функции
 def export_records_csv(request):
-    records = MedicalRecord.objects.all().values()
-    df = pd.DataFrame(records)
-    response = HttpResponse(content_type='text/csv')
-    response['Content-Disposition'] = 'attachment; filename="medical_records.csv"'
-    df.to_csv(path_or_buf=response, index=False)
-    return response
+    #records = MedicalRecord.objects.all().values()
+    #df = pd.DataFrame(records)
+    #response = HttpResponse(content_type='text/csv')
+    #response['Content-Disposition'] = 'attachment; filename="medical_records.csv"'
+    #df.to_csv(path_or_buf=response, index=False)
+    #return response
+    pass
 
 def export_records_pdf(request):
     # добавить экспорт в PDF с ReportLab
@@ -36,8 +38,6 @@ def export_records_pdf(request):
 def home(request):
     return render(request, 'core/home.html')
 
-def patient_page(request):
-    return render(request, 'core/patient.html')
 
 def doctor_page(request):
     return render(request, 'core/Doctor.html')
@@ -83,3 +83,13 @@ def indexItem(request, my_id):
         'item':item,
     }
     return render(request, 'core/detail.html', context=context)
+
+def add_item(request):
+    if request.method == "POST":
+        name = request.POST.get("name")
+        price = request.POST.get("price")
+        description = request.POST.get("description")
+        image = request.FILES['upload']
+        item=Product(name=name, price=price, description=description, image=image)
+        item.save()
+    return render(request, 'core/additem.html',)
