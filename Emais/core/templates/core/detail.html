@@ -9,6 +9,8 @@
     <p class="mt-5">{{ item.name }}</p>
     <p class="mt-5 text-green-500">${{ item.price | intcomma }}</p>
     <p class="mt-5 text-gray-600">{{ item.description }}</p>
+    <p class="mt-5 font-bold text-x1 text-indigo-500 mb-2">by {{item.seller}}</p>
+    <p class="mt-5 font-bold text-x1 text-black mb-2">Contact: {{item.seller.patientmyinfo.contact_number}}</p>
   </div>
 </div>
 {% endblock content %}

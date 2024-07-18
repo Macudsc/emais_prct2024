@@ -86,12 +86,14 @@ def indexItem(request, my_id):
     }
     return render(request, 'core/detail.html', context=context)
 
+@login_required
 def add_item(request):
     if request.method == "POST":
         name = request.POST.get("name")
         price = request.POST.get("price")
         description = request.POST.get("description")
         image = request.FILES['upload']
-        item=Product(name=name, price=price, description=description, image=image)
+        seller = request.user
+        item=Product(name=name, price=price, description=description, image=image, seller=seller)
         item.save()
     return render(request, 'core/additem.html',)

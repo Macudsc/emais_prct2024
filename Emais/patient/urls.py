@@ -14,4 +14,5 @@ urlpatterns = [
 
     #profile
     path('myinfo/',patient_myinfo, name="myinfo"),
+    #path('sellerprofile/',patient_myinfo, name="sellerprofile"),
 ]

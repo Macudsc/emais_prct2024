@@ -5,99 +5,51 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Моя информация</title>
-    <link rel="stylesheet" href="{% static 'core/styles.css' %}">
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #e8f5e9;
-            margin: 0;
-            padding: 0;
-        }
-        header {
-            background-color: #559f59;
-            padding: 10px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        header nav a {
-            color: white;
-            text-decoration: none;
-            margin: 0 15px;
-            font-size: 18px;
-        }
-        header nav a:hover {
-            text-decoration: underline;
-        }
-        header button {
-            background-color: #2f7933;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        header button:hover {
-            background-color: #1e5221;
-        }
-        .content {
-            padding: 20px;
-        }
-        .info-section {
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            max-width: 600px;
-            margin: 20px auto;
-            position: relative;
-        }
-        .info-section h2 {
-            color: #388e3c;
-        }
-        .info-section p {
-            color: #555;
-        }
-        .edit-button {
-            background-color: #388e3c;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            cursor: pointer;
-            font-size: 14px;
-            position: absolute;
-            top: 20px;
-            right: 20px;
-        }
-        .edit-button:hover {
-            background-color: #2f7933;
-        }
-    </style>
+    {% comment %}<link rel="stylesheet" href="{% static 'core/styles.css' %}">{% endcomment %}
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-    <header>
-        <nav>
-            <a href="/">ЕМАИС</a>
-            <a href="#">Моя информация</a>
-            <a href="#">Мои записи</a>
-            <a href="#">Моя медкарта</a>
+<body class="bg-green-50">
+    <header class="bg-green-600 p-4 flex justify-between items-center">
+        <nav class="flex space-x-4">
+            <a href="/" class="text-white text-lg">ЕМАИС</a>
+            <a href="#" class="text-white text-lg">Моя информация</a>
+            <a href="#" class="text-white text-lg">Мои записи</a>
+            <a href="#" class="text-white text-lg">Моя медкарта</a>
         </nav>
         {% if user.is_authenticated %}
-            <a href="{% url 'patient:logout' %}" class="text-white">Выход</a>
+            <a href="{% url 'patient:logout' %}" class="text-white text-lg">Выход</a>
         {% endif %}
     </header>
-    <div class="content">
-        <div class="info-section">
-            <h2>Моя информация</h2>
-            <p><strong>Ваш ID: </strong>123456789</p>
-            <p><strong>Имя: </strong>Иван Иванов</p>
-            <p><strong>Дата рождения: </strong>01.01.1980</p>
-            <p><strong>Пол: </strong> Мужской</p>
-            <p><strong>Адрес: </strong>г. Москва, Гороховских пер., д. 1</p>
-            <p><strong>Телефон: </strong>+7 (900) 123-45-67</p>
-            <p><strong>Email: </strong>ivan.ivanov@example.com</p>
-            <button class="edit-button">Изменить</button>
+    <div class="content py-8">
+        <div class="bg-white p-6 rounded-lg shadow-lg max-w-lg mx-auto relative">
+            <h2 class="text-green-700 text-2xl font-bold mb-4">Моя информация</h2>
+            <p class="text-gray-700"><strong>Ваш ID: </strong>123456789</p>
+            <p class="text-gray-700"><strong>Имя: </strong>Иван Иванов</p>
+            <p class="text-gray-700"><strong>Дата рождения: </strong>01.01.1980</p>
+            <p class="text-gray-700"><strong>Пол: </strong> Мужской</p>
+            <p class="text-gray-700"><strong>Адрес: </strong>г. Москва, Гороховских пер., д. 1</p>
+            <p class="text-gray-700"><strong>Телефон: </strong>+7 (900) 123-45-67</p>
+            <p class="text-gray-700"><strong>Email: </strong>ivan.ivanov@example.com</p>
+            <button class="bg-green-600 text-white px-4 py-2 rounded absolute top-4 right-4 hover:bg-green-700 transition">Изменить</button>
         </div>
     </div>
+
+    {% if user.patientmyinfo %}
+        <div class="grid p-10 grid-cols-1 lg:grid-cols-3 sm:grid-cols-1">
+            <div class="rounded shadow-lg">
+                <div>
+                    {% if user.patientmyinfo.image %}
+                        <img src="{{ user.patientmyinfo.image.url }}" alt="" srcset="">
+                    {% endif %}
+                </div>
+                <h1 class="font-bold text=xl m-2">{{ user.username }}</h1>
+                <h1 class="font-bold text=xl m-2">{{ user.patientmyinfo.contact_number }}</h1>
+                
+            </div>
+        </div>
+    {% else %}
+        <form action="" method="post"></form>
+        Нет данных
+    {% endif %}
 </body>
 </html>

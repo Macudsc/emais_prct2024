@@ -171,4 +171,5 @@ MEDIA_ROOT = BASE_DIR / 'media'
 MEDIA_URL = '/media/'
 
 LOGIN_REDIRECT_URL='patient:myinfo'
+LOGIN_URL = 'patient:login'
 LOGOUT_REDIRECT_URL='core:home'

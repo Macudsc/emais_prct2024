@@ -5,17 +5,17 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{% static 'core/styles.css' %}">
-    {% comment %}<script src="https://cdn.tailwindcss.com"></script>{% endcomment %}
+    <!--<link rel="stylesheet" href="{% static 'core/styles.css' %}">-->
+    <script src="https://cdn.tailwindcss.com"></script>
     <title>Емаис</title>
 </head>
 <body class="bg-gray-100 flex flex-col min-h-screen">
-    <header class=" bg-emerald-900 text-white text-center py-8">
+    <header class=" bg-emerald-900 text-white text-center pt-12 pb-9">
         <h1 class="text-4xl font-bold">Добро пожаловать в систему управления здравоохранением Емаис</h1>
         <p class="mt-2">Удобное управление медицинскими записями и исследованиями</p>
         {% if user.is_authenticated %}
             <!--<a href="{% url 'patient:logout' %}" class="py-4 px-2 text-orange-600 font-semibold">Выход</a>-->
-            <a href="{% url 'patient:myinfo' %}" class="mt-4 mx-2 inline-block bg-blue-500 text-white px-6 py-2 rounded-full hover:bg-blue-600 transition text-xl">myinfo-Профиль-Моя информация</a>
+            <a href="{% url 'patient:myinfo' %}" class="mt-4 mx-2 inline-block bg-blue-500 text-white px-6 py-2 rounded-full hover:bg-blue-600 transition text-xl">Перейти в профиль</a>
         {% else %}
             <a href="{% url 'patient:register' %}" class="mt-4 mx-2 inline-block bg-green-600 text-white px-6 py-2 rounded-full hover:bg-green-700 transition text-xl">Регистрация</a>
             <a href="{% url 'patient:login' %}" class="mt-4 mx-2 inline-block bg-blue-500 text-white px-6 py-2 rounded-full hover:bg-blue-600 transition text-xl">Вход</a>
