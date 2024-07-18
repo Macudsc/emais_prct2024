@@ -15,7 +15,10 @@
             <a class="text-white text-lg" href="#">Моя информация</a>
             <a class="text-white text-lg" href="#">Пользователи</a>
         </nav>
-        <button class="bg-red-800 text-white py-2 px-4 rounded hover:bg-red-900">Выход</button>
+        {% if user.is_authenticated %}
+            {% comment %}<button class="bg-red-800 text-white py-2 px-4 rounded hover:bg-red-900">Выход</button>{% endcomment %}
+            <a href="{% url 'patient:logout' %}" class="bg-red-800 text-white py-2 px-4 rounded hover:bg-red-900">Выход</a>
+        {% endif %}
     </header>
     
     <div class="content p-4">

@@ -8,6 +8,7 @@
 from django.conf import settings
 from django.shortcuts import render, redirect
 from .models import Product, User
+from django.contrib.auth.decorators import login_required
 
 #class UserViewSet(viewsets.ModelViewSet):
 #    queryset = User.objects.all()
@@ -38,11 +39,12 @@ def export_records_pdf(request):
 def home(request):
     return render(request, 'core/home.html')
 
-
+@login_required
 def doctor_page(request):
     return render(request, 'core/Doctor.html')
 
 # Подгрузка данных из БД
+@login_required
 def admin_page(request):
     sort_by = request.GET.get('sort_by', 'id')  # По умолчанию сортировка по ID
     sort_order = request.GET.get('sort_order', 'asc')

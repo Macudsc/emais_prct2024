@@ -1,9 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import login
 from .forms import NewUserForm
-
-def patient_page(request):
-    return render(request, 'patient/patient.html')
+from django.contrib.auth.decorators import login_required
 
 def register(request):
   if request.method == 'POST':
@@ -15,3 +13,8 @@ def register(request):
   form=NewUserForm()
   context={'form':form}
   return render(request, 'patient/register.html', context)
+
+#profile
+@login_required # расширение, чтобы нельзя было зайти на страницу без входа в УЗ
+def patient_myinfo(request):
+    return render(request, 'patient/myinfo.html')
