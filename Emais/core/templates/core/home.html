@@ -12,8 +12,8 @@
     <header class=" bg-emerald-900 text-white text-center py-8">
         <h1 class="text-4xl font-bold">Добро пожаловать в систему управления здравоохранением Емаис</h1>
         <p class="mt-2">Удобное управление медицинскими записями и исследованиями</p>
-        <a href="#" class="mt-4 mx-2 inline-block bg-green-600 text-white px-6 py-2 rounded-full hover:bg-green-700 transition text-xl">Регистрация</a>
-        <a href="#" class="mt-4 mx-2 inline-block bg-blue-500 text-white px-6 py-2 rounded-full hover:bg-blue-600 transition text-xl">Вход</a>
+        <a href="{% url 'patient:register' %}" class="mt-4 mx-2 inline-block bg-green-600 text-white px-6 py-2 rounded-full hover:bg-green-700 transition text-xl">Регистрация</a>
+        <a href="{% url 'patient:login' %}" class="mt-4 mx-2 inline-block bg-blue-500 text-white px-6 py-2 rounded-full hover:bg-blue-600 transition text-xl">Вход</a>
     </header>
     <div class="max-w-7xl mx-auto px-4 py-8">
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -34,8 +34,8 @@
             <div class="bg-white shadow-lg rounded-lg overflow-hidden">
                 <img src="{% static 'core/images/buggy.gif' %}" alt="Инструкция по использованию сайта" class="w-full h-60 object-cover">
                 <div class="p-6">
-                    <h2 class="text-xl font-bold">Инструкция по использованию сайта</h2>
-                    <p class="mt-2 text-gray-700">Зарегистрируйтесь в системе Емаис и получите доступ к пошаговой инструкции по использованию всех возможностей нашего сайта. Мы стремимся сделать ваше взаимодействие с системой максимально простым и понятным.</p>
+                    <h2 class="text-xl font-bold">Медицинская карта</h2>
+                    <p class="mt-2 text-gray-700">Зарегистрируйтесь в системе Емаис и получите возможность ведения медицинской карты. В ней будет содержаться вся необходимая информация о приёмах.  Мы стремимся сделать ваше взаимодействие с системой максимально простым и понятным.</p>
                 </div>
             </div>
         </div>
