@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Медицинская запись</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        .record-item { margin-bottom: 20px; }
+        .record-item h3 { color: #4CAF50; }
+        .record-item img { max-width: 300px; height: auto; }
+    </style>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+    <div class="record-item">
+        <div class="text-2xl">Медицинская запись</div>
+        <h3>Описание приёма</h3>
+        <p>{{ record.description }}</p>
+        <h3>Заключение</h3>
+        <p>{{ record.conclusion }}</p>
+        <h3>Дата завершения</h3>
+        <p>{{ record.date_completed }}</p>
+        {% if record.image %}
+            <h3>Изображение</h3>
+            <img src="{{ record.image.url }}" alt="Medical Record Image"/>
+        {% endif %}
+    </div>
+</body>
+</html>

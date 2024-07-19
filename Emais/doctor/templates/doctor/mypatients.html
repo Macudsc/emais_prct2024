@@ -2,42 +2,88 @@
 {% block content %}
 <div class="mx-auto max-w-screen-2xl content p-8">
     <div class="appointment-list grid grid-cols-1 md:grid-cols-2 gap-4">
+        {% for appointment in appointments %}
         <div class="appointment-item bg-white p-6 rounded-lg shadow-md">
-            <h3 class="text-blue-600 text-xl font-semibold mb-2">Пациент: Иван Иванов</h3>
-            <p class="text-gray-700 mb-1"><strong>Дата приёма:</strong> 01.07.2024</p>
-            <p class="text-gray-700 mb-4"><strong>Время:</strong> 10:00</p>
+            <h3 class="text-blue-600 text-xl font-semibold mb-2">Пациент: {{ appointment.patient.username }}</h3>
+            <p class="text-gray-700 mb-1"><strong>Дата приёма:</strong> {{ appointment.date }}</p>
+            <p class="text-gray-700 mb-4"><strong>Время:</strong> {{ appointment.time }}</p>
             <div class="buttons flex space-x-2">
-                <button class="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700">Заполнить исследование</button>
-                <button class="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700">Просмотр медкарты</button>
+                <button class="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700"
+                        onclick="openCompleteAppointmentModal({{ appointment.id }}, '{{ appointment.patient.username }}')">Заполнить исследование</button>
+                <button class="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700"
+                        onclick="openViewMedicalRecordsModal({{ appointment.patient.id }})">Просмотр медкарты</button>
             </div>
         </div>
-        <div class="appointment-item bg-white p-6 rounded-lg shadow-md">
-            <h3 class="text-blue-600 text-xl font-semibold mb-2">Пациент: Петр Петров</h3>
-            <p class="text-gray-700 mb-1"><strong>Дата приёма:</strong> 01.07.2024</p>
-            <p class="text-gray-700 mb-4"><strong>Время:</strong> 11:00</p>
-            <div class="buttons flex space-x-2">
-                <button class="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700">Заполнить исследование</button>
-                <button class="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700">Просмотр медкарты</button>
-            </div>
-        </div>
-        <div class="appointment-item bg-white p-6 rounded-lg shadow-md">
-            <h3 class="text-blue-600 text-xl font-semibold mb-2">Пациент: Мария Смирнова</h3>
-            <p class="text-gray-700 mb-1"><strong>Дата приёма:</strong> 01.07.2024</p>
-            <p class="text-gray-700 mb-4"><strong>Время:</strong> 12:00</p>
-            <div class="buttons flex space-x-2">
-                <button class="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700">Заполнить исследование</button>
-                <button class="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700">Просмотр медкарты</button>
-            </div>
-        </div>
-        <div class="appointment-item bg-white p-6 rounded-lg shadow-md">
-            <h3 class="text-blue-600 text-xl font-semibold mb-2">Пациент: Анна Сидорова</h3>
-            <p class="text-gray-700 mb-1"><strong>Дата приёма:</strong> 01.07.2024</p>
-            <p class="text-gray-700 mb-4"><strong>Время:</strong> 13:00</p>
-            <div class="buttons flex space-x-2">
-                <button class="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700">Заполнить исследование</button>
-                <button class="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700">Просмотр медкарты</button>
-            </div>
-        </div>
+        {% empty %}
+        <p>Нет запланированных приёмов.</p>
+        {% endfor %}
     </div>
 </div>
+
+<div id="complete-appointment-modal" class="modal hidden">
+    <div class="modal-content bg-white p-6 rounded-lg shadow-md">
+        <span class="close" onclick="closeCompleteAppointmentModal()">&times;</span>
+        <h2 class="text-xl font-semibold mb-4">Заполнить исследование для пациента: <span id="modal-patient-name"></span></h2>
+        <form id="complete-appointment-form" enctype="multipart/form-data">
+            <label for="description">Описание приёма</label>
+            <textarea id="description" name="description" rows="4" class="w-full p-2 border rounded mb-4"></textarea>
+            <label for="conclusion">Заключение</label>
+            <textarea id="conclusion" name="conclusion" rows="4" class="w-full p-2 border rounded mb-4"></textarea>
+            <label for="images">Загрузить изображения</label>
+            <input class="w-full p-2 border rounded mb-4" type="file" accept="image/*" name="upload" id="upload">
+            <div class="buttons flex space-x-2">
+                <button class="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700" type="submit">Добавить исследование</button>
+                <button type="button" class="bg-gray-600 text-white py-2 px-4 rounded hover:bg-gray-700" onclick="closeCompleteAppointmentModal()">Отмена</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="view-medical-records-modal" class="modal hidden">
+    <div class="modal-content bg-white p-6 rounded-lg shadow-md">
+        <span class="close" onclick="closeViewMedicalRecordsModal()">&times;</span>
+        <div id="medical-records-content"></div>
+    </div>
+</div>
+
+<script>
+    function openCompleteAppointmentModal(appointmentId, patientName) {
+        document.getElementById('modal-patient-name').innerText = patientName;
+        document.getElementById('complete-appointment-modal').classList.remove('hidden');
+        document.getElementById('complete-appointment-form').onsubmit = function(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            fetch(`/doctor/complete_appointment/${appointmentId}/`, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                }
+            }).then(response => response.json()).then(data => {
+                if (data.status === 'success') {
+                    location.reload();
+                } else {
+                    alert('Failed to complete the appointment.');
+                }
+            });
+        };
+    }
+
+    function closeCompleteAppointmentModal() {
+        document.getElementById('complete-appointment-modal').classList.add('hidden');
+    }
+
+    function openViewMedicalRecordsModal(patientId) {
+        fetch(`/doctor/view_medical_records/${patientId}/`)
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('medical-records-content').innerHTML = html;
+                document.getElementById('view-medical-records-modal').classList.remove('hidden');
+            });
+    }
+
+    function closeViewMedicalRecordsModal() {
+        document.getElementById('view-medical-records-modal').classList.add('hidden');
+    }
+</script>
 {% endblock content %}

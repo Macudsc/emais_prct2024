@@ -1,4 +1,179 @@
 {% extends "patient/base.html" %}
 {% block content %}
-records
+<div class="px-4 pt-4 rounded-lg max-w-7xl mx-auto">
+    <h1 class="text-3xl font-bold mb-4">Мои записи</h1>
+    {% if appointments %}
+        <ul>
+            {% for appointment in appointments %}
+                <li>{{ appointment.date }} - {{ appointment.time }} с доктором {{ appointment.doctor.first_name }} {{ appointment.doctor.last_name }}</li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>У вас пока ещё нет записей.</p>
+    {% endif %}
+    <button id="openModal" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition mt-4">Записаться на приём</button>
+</div>
+
+<div id="myModal" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center hidden">
+    <div class="bg-white p-6 rounded-lg shadow-lg w-96">
+        <h2 class="text-2xl font-bold mb-4">Записаться на приём</h2>
+        <form id="appointmentForm">
+            <div id="step-1">
+                <label for="doctor" class="block text-sm font-medium text-gray-700">Выберите врача</label>
+                <select id="doctor" name="doctor" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                    <option value="">Выберите врача</option>
+                </select>
+            </div>
+            <div id="step-2" class="hidden mt-4">
+                <label for="date" class="block text-sm font-medium text-gray-700">Выберите дату</label>
+                <select id="date" name="date" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                    <option value="">Выберите дату</option>
+                </select>
+            </div>
+            <div id="step-3" class="hidden mt-4">
+                <label for="time" class="block text-sm font-medium text-gray-700">Выберите время</label>
+                <select id="time" name="time" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                    <option value="">Выберите время</option>
+                </select>
+            </div>
+            <div class="mt-4">
+                <button type="button" id="submit-button" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition hidden">Записаться</button>
+                <button type="button" id="cancel-button" class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700 transition">Отменить</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.getElementById('openModal').addEventListener('click', function() {
+    document.getElementById('myModal').classList.remove('hidden');
+    fetchDoctors();
+});
+
+document.getElementById('cancel-button').addEventListener('click', function() {
+    document.getElementById('myModal').classList.add('hidden');
+    resetForm();
+});
+
+function fetchDoctors() {
+    fetch('{% url "patient:get_doctors" %}')
+        .then(response => response.json())
+        .then(data => {
+            const doctorSelect = document.getElementById('doctor');
+            doctorSelect.innerHTML = '<option value="">Выберите врача</option>';
+            data.forEach(doctor => {
+                const option = document.createElement('option');
+                option.value = doctor.id;
+                option.textContent = `${doctor.first_name} ${doctor.last_name}, ${doctor.specialization}, ${doctor.hospital_address}`;
+                doctorSelect.appendChild(option);
+            });
+        });
+}
+
+document.getElementById('doctor').addEventListener('change', function() {
+    if (this.value) {
+        fetchAvailableTimes();
+    }
+});
+
+function fetchAvailableTimes() {
+    fetch('{% url "patient:get_available_times" %}')
+        .then(response => response.json())
+        .then(data => {
+            const dateSelect = document.getElementById('date');
+            dateSelect.innerHTML = '<option value="">Выберите дату</option>';
+            data.forEach(item => {
+                const option = document.createElement('option');
+                option.value = item.date;
+                option.textContent = item.date;
+                dateSelect.appendChild(option);
+            });
+            document.getElementById('step-2').classList.remove('hidden');
+        });
+}
+
+document.getElementById('date').addEventListener('change', function() {
+    const selectedDate = this.value;
+    if (selectedDate) {
+        fetchAvailableTimesForDate(selectedDate);
+    }
+});
+
+function fetchAvailableTimesForDate(date) {
+    fetch('{% url "patient:get_available_times" %}')
+        .then(response => response.json())
+        .then(data => {
+            const timeSelect = document.getElementById('time');
+            timeSelect.innerHTML = '<option value="">Выберите время</option>';
+            const times = data.find(item => item.date === date).times;
+            times.forEach(time => {
+                const option = document.createElement('option');
+                option.value = time;
+                option.textContent = time;
+                timeSelect.appendChild(option);
+            });
+            document.getElementById('step-3').classList.remove('hidden');
+            document.getElementById('submit-button').classList.remove('hidden');
+        });
+}
+
+document.getElementById('submit-button').addEventListener('click', function() {
+    const form = document.getElementById('appointmentForm');
+    const doctor = form.doctor.value;
+    const date = form.date.value;
+    const time = form.time.value;
+
+    if (doctor && date && time) {
+        const formData = {
+            doctor_id: doctor,
+            date: date,
+            time: time
+        };
+
+        const csrftoken = getCookie('csrftoken');
+
+        fetch('{% url "patient:new_appointment" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrftoken
+            },
+            body: JSON.stringify(formData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Ошибка при записи на приём');
+            }
+        });
+    } else {
+        alert('Пожалуйста, заполните все поля');
+    }
+});
+
+function resetForm() {
+    const form = document.getElementById('appointmentForm');
+    form.reset();
+    document.getElementById('step-2').classList.add('hidden');
+    document.getElementById('step-3').classList.add('hidden');
+    document.getElementById('submit-button').classList.add('hidden');
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
 {% endblock content %}

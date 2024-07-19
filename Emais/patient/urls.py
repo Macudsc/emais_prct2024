@@ -1,6 +1,7 @@
 from django.urls import path
 #from .views import register
-from .views import *
+#from .views import *
+from . import views
 #from django.contrib.auth.views import LoginView, LogoutView
 
 app_name="patient"
@@ -8,8 +9,13 @@ app_name="patient"
 urlpatterns = [
     
     #profile
-    path('myinfo/', patient_myinfo, name="myinfo"),
-    #path('sellerprofile/',patient_myinfo, name="sellerprofile"),
-    path('myrecords/',patient_myrecords,name="myrecords"),
-    path('mymedicalcard/',patient_mymdeicalcard,name="mymedicalcard"),
+    path('myinfo/', views.patient_myinfo, name="myinfo"),
+    path('myrecords/', views.patient_myrecords, name='myrecords'),
+    path('mymedicalcard/', views.patient_mymedicalcard, name='mymedicalcard'),
+
+    path('new_appointment/', views.new_appointment, name='new_appointment'),
+    path('get_doctors/', views.get_doctors, name='get_doctors'),
+    path('get_available_times/', views.get_available_times, name='get_available_times'),
+    path('export_medical_record_pdf/<int:record_id>/', views.export_medical_record_pdf, name='export_medical_record_pdf'),
+    path('export_medical_record_doc/<int:record_id>/', views.export_medical_record_doc, name='export_medical_record_doc'),
 ]

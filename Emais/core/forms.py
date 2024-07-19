@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django import forms
 
 # TODO Регистрация только в пациента
+# TODO Сделать раздел информации у каждой группы
 class NewUserForm(UserCreationForm):
   email=forms.EmailField(required=True, widget=forms.EmailInput(attrs={"class":"focus:outline-none", 'placeholder': "mail@mail.com"}))
   username=forms.CharField(required=True, widget=forms.TextInput(attrs={"class":"focus:outline-none", 'placeholder': "Введите имя пользователя"}))

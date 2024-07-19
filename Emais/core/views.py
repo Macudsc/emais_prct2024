@@ -1,43 +1,30 @@
-#from rest_framework import viewsets
-#from .models import User, Appointment, MedicalRecord
-#from .serializers import UserSerializer, AppointmentSerializer, MedicalRecordSerializer
-
-#import pandas as pd
-#from django.http import HttpResponse
-
 from django.conf import settings
 from django.shortcuts import render, redirect
 from .models import Product, User
 from django.contrib.auth.decorators import login_required
 
 from django.contrib.auth import login
-#from .models import PatientMyInfo
 from .forms import NewUserForm
-#from django.shortcuts import render, redirect
-from django.contrib.auth.models import User
-
-#class UserViewSet(viewsets.ModelViewSet):
-#    queryset = User.objects.all()
-#    serializer_class = UserSerializer
-
-#class AppointmentViewSet(viewsets.ModelViewSet):
-#    queryset = Appointment.objects.all()
-#    serializer_class = AppointmentSerializer
-
-#class MedicalRecordViewSet(viewsets.ModelViewSet):
-#    queryset = MedicalRecord.objects.all()
-#    serializer_class = MedicalRecordSerializer
+from django.contrib.auth.models import User, Group
+from patient.models import PatientProfile  # Импортируем модель профиля пациента
 
 def register(request):
     if request.method == 'POST':
-        form=NewUserForm(request.POST)
+        form = NewUserForm(request.POST)
         if form.is_valid():
-            user=form.save()
+            user = form.save()
+            patient_group = Group.objects.get(name='patient')
+            user.groups.add(patient_group)
+
+            PatientProfile.objects.create(user=user)  # Создаем профиль пациента
+
             login(request, user)
-            return redirect('core:index')
-    form=NewUserForm()
-    context={'form':form}
+            return redirect('patient:myinfo')
+    else:
+        form = NewUserForm()
+    context = {'form': form}
     return render(request, 'core/register.html', context)
+
 
 # основные функции
 def export_records_csv(request):

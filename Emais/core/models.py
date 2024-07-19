@@ -1,30 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
 
-
-#class User(AbstractUser):
-#    ROLES = (
-#        ('admin', 'Administrator'),
-#        ('doctor', 'Doctor'),
-#        ('patient', 'Patient'),
-#    )
-#    role = models.CharField(max_length=10, choices=ROLES)
-    
-#    # Переопределяем обратные связи для groups и user_permissions
-#    groups = models.ManyToManyField(Group, related_name='custom_user_groups')
-#    user_permissions = models.ManyToManyField(Permission, related_name='custom_user_permissions')
-
-#class Appointment(models.Model):
-#    patient = models.ForeignKey(User, related_name='appointments', on_delete=models.CASCADE)
-#    doctor = models.ForeignKey(User, related_name='appointments_as_doctor', on_delete=models.CASCADE)
-#    date = models.DateTimeField()
-#    notes = models.TextField()
-
-#class MedicalRecord(models.Model):
-#    patient = models.ForeignKey(User, related_name='medical_records', on_delete=models.CASCADE)
-#    document = models.FileField(upload_to='medical_records/')
-#    created_at = models.DateTimeField(auto_now_add=True)
-
 class Product(models.Model):
     seller=models.ForeignKey(User, on_delete=models.CASCADE, default='1')
     name=models.CharField(max_length=100)

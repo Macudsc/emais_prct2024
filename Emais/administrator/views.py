@@ -1,15 +1,34 @@
-from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from core.decorators import group_required
+from django.shortcuts import render, redirect
+from .models import AdministratorProfile
+from .forms import AdministratorProfileForm
+
+
+#@login_required
+#@group_required('administrator')
+#def administrator_myinfo(request):
+#    #return render(request, 'administrator/myinfo.html')
+#    user = request.user
+#    groups = user.groups.all()  # Получаем все группы, к которым принадлежит пользователь
+#    return render(request, 'administrator/myinfo.html', {'user': user, 'groups': groups})
 
 @login_required
 @group_required('administrator')
 def administrator_myinfo(request):
-    #return render(request, 'administrator/myinfo.html')
     user = request.user
-    groups = user.groups.all()  # Получаем все группы, к которым принадлежит пользователь
-    return render(request, 'administrator/myinfo.html', {'user': user, 'groups': groups})
+    profile, created = AdministratorProfile.objects.get_or_create(user=user)  #профиль
+    if request.method == 'POST':
+        form = AdministratorProfileForm(request.POST, instance=profile)
+        if form.is_valid():
+            form.save()
+            return redirect('administrator:myinfo')
+    else:
+        form = AdministratorProfileForm(instance=profile)
+    groups = user.groups.all()
+    return render(request, 'administrator/myinfo.html', {'user': user, 'groups': groups, 'form': form, 'profile': profile})
+
 
 # Подгрузка данных из БД
 @login_required
