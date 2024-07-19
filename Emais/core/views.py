@@ -10,6 +10,12 @@ from django.shortcuts import render, redirect
 from .models import Product, User
 from django.contrib.auth.decorators import login_required
 
+from django.contrib.auth import login
+#from .models import PatientMyInfo
+from .forms import NewUserForm
+#from django.shortcuts import render, redirect
+from django.contrib.auth.models import User
+
 #class UserViewSet(viewsets.ModelViewSet):
 #    queryset = User.objects.all()
 #    serializer_class = UserSerializer
@@ -21,6 +27,17 @@ from django.contrib.auth.decorators import login_required
 #class MedicalRecordViewSet(viewsets.ModelViewSet):
 #    queryset = MedicalRecord.objects.all()
 #    serializer_class = MedicalRecordSerializer
+
+def register(request):
+    if request.method == 'POST':
+        form=NewUserForm(request.POST)
+        if form.is_valid():
+            user=form.save()
+            login(request, user)
+            return redirect('core:index')
+    form=NewUserForm()
+    context={'form':form}
+    return render(request, 'core/register.html', context)
 
 # основные функции
 def export_records_csv(request):
@@ -38,36 +55,6 @@ def export_records_pdf(request):
 
 def home(request):
     return render(request, 'core/home.html')
-
-@login_required
-def doctor_page(request):
-    return render(request, 'core/Doctor.html')
-
-# Подгрузка данных из БД
-@login_required
-def admin_page(request):
-    sort_by = request.GET.get('sort_by', 'id')  # По умолчанию сортировка по ID
-    sort_order = request.GET.get('sort_order', 'asc')
-
-    if request.GET.get('clear_sort'):
-        sort_by = 'id'
-        sort_order = 'asc'
-    else:
-        if sort_by not in ['first_name', 'role', 'id']:
-            sort_by = 'id'
-        if sort_order == 'desc':
-            sort_by = f'-{sort_by}'
-    
-    users = User.objects.all().order_by(sort_by)
-    
-    context2 = {
-        'users': users,
-        'current_sort': request.GET.get('sort_by', 'id'),
-        'current_order': request.GET.get('sort_order', 'asc')
-    }
-    return render(request, 'core/Administrator.html', context=context2)
-
-
 
 # тестовые функции
 def index(request):

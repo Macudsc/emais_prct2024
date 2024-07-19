@@ -1,0 +1,12 @@
+{% load static %}
+<header class="bg-green-600 p-4 flex justify-between items-center">
+  <nav class="flex space-x-4">
+      <a href="/" class="text-white text-lg">ЕМАИС</a>
+      <a href="/patient/myinfo/" class="text-white text-lg">Моя информация</a>
+      <a href="/patient/myrecords/" class="text-white text-lg">Мои записи</a>
+      <a href="/patient/mymedicalcard/" class="text-white text-lg">Моя медкарта</a>
+  </nav>
+  {% if user.is_authenticated %}
+  <a href="{% url 'core:logout' %}" class="bg-green-700 text-white py-2 px-4 rounded hover:bg-green-800">Выход</a>
+  {% endif %}
+</header>

@@ -9,33 +9,52 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <title>Tools</title>
 </head>
-<body>
-    <div class="my-4 p-4 rounded-lg max-w-7xl mx-auto px-4 py-8">
+<body class="bg-black text-white">
+    
+    <div class="px-4 pt-4 rounded-lg max-w-7xl mx-auto px-4">
+        <h1>Info</h1>
+        <p>Welcome, your username: {{ user.username }}</p>
+        <p>user ID: {{ user.id }}</p>
+        <!--<p>{{ groups }}</p>-->
+        <p>GROUP: {% for group in groups %}
+            {{ group.name }} (ID: {{ group.id }})
+        {% endfor %}
+        </p>
+    </div>
+    
+    <div class="my-4 p-4 rounded-lg max-w-7xl mx-auto px-4">
         <h1 class="text-2xl font-bold mb-4">Инструменты</h1>
         <div class="space-y-4">
             <div class="space-x-2">
                 {% comment %}<a href="/api/" class="inline-block bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition">API</a>{% endcomment %}
+                 {% comment %}<a href="/export/csv/" class="inline-block bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 transition">Export CSV</a>{% endcomment %}
+                {% comment %}<a href="/export/pdf/" class="inline-block bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 transition">Export PDF</a>{% endcomment %}
                 <a href="/admin/" class="inline-block bg-yellow-400 text-black px-4 py-2 rounded-md hover:bg-yellow-600 transition">/admin/</a>
                 <a href="/" class="inline-block bg-yellow-400 text-black px-4 py-2 rounded-md hover:bg-yellow-600 transition">/</a>
-                {% comment %}<a href="/export/csv/" class="inline-block bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 transition">Export CSV</a>{% endcomment %}
-                {% comment %}<a href="/export/pdf/" class="inline-block bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 transition">Export PDF</a>{% endcomment %}
-            </div>
-            <div class="space-x-2">
-                <a href="/patient/myinfo/" class="inline-block bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition">/patient/myinfo/</a>
-                <a href="/patient/register/" class="inline-block bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition">/patient/register/</a>
-                <a href="/patient/login/" class="inline-block bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition">/patient/login/</a>
-                
-            </div>
-            <div class="space-x-2">
-                <a href="/doctor/mypatients/" class="inline-block bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition">/doctor/mypatients/</a>
-            </div>
-            <div class="space-x-2">
-                <a href="/administrator/myusers/" class="inline-block bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition">/administrator/myusers/</a>
             </div>
             <div class="space-x-2">
                 <a href="/core/" class="inline-block bg-gray-800 text-white px-4 py-2 rounded-md hover:bg-gray-900 transition">/core/</a>
+                <a href="/patient/myinfo/" class="inline-block bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition">/patient/myinfo/</a>
+                <a href="/patient/myrecords/" class="inline-block bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition">/patient/myrecords/</a>
+                <a href="/patient/mymedicalcard/" class="inline-block bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition">/patient/mymedicalcard/</a>
                 <a href="/core/index/" class="inline-block bg-gray-800 text-white px-4 py-2 rounded-md hover:bg-gray-900 transition">/core/index/</a>
+            </div>
+            <div class="space-x-2">
+                <a href="/core/" class="inline-block bg-gray-800 text-white px-4 py-2 rounded-md hover:bg-gray-900 transition">/core/</a>
+                <a href="/doctor/myinfo/" class="inline-block bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition">/doctor/myinfo/</a>
+                <a href="/doctor/mypatients/" class="inline-block bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition">/doctor/mypatients/</a>
                 <a href="/core/additem/" class="inline-block bg-gray-800 text-white px-4 py-2 rounded-md hover:bg-gray-900 transition">/core/additem/</a>
+            </div>
+            <div class="space-x-2">
+                <a href="/core/" class="inline-block bg-gray-800 text-white px-4 py-2 rounded-md hover:bg-gray-900 transition">/core/</a>
+                <a href="/administrator/myinfo/" class="inline-block bg-red-500 text-black px-4 py-2 rounded-md hover:bg-red-600 transition">/administrator/myinfo/</a>
+                <a href="/administrator/myusers/" class="inline-block bg-red-500 text-black px-4 py-2 rounded-md hover:bg-red-600 transition">/administrator/myusers/</a>
+            </div>
+            <div class="space-x-2">
+                <a href="/core/login/" class="inline-block bg-gray-800 text-white px-4 py-2 rounded-md hover:bg-gray-900 transition">/core/login/</a>
+                
+                <a href="/core/register/" class="inline-block bg-gray-800 text-white px-4 py-2 rounded-md hover:bg-gray-900 transition">/core/register/</a>
+                <a href="/core/logout/" class="inline-block bg-gray-800 text-white px-4 py-2 rounded-md hover:bg-gray-900 transition">/core/logout/</a>
             </div>
         </div>
     </div>

@@ -1,33 +1,21 @@
-from django.shortcuts import render, redirect
-from django.contrib.auth import login
-from .models import PatientMyInfo
-from .forms import NewUserForm
+from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User
+from core.decorators import group_required
+from django.contrib.auth.models import Group
 
-
-
-def register(request):
-  if request.method == 'POST':
-    form=NewUserForm(request.POST)
-    if form.is_valid():
-      user=form.save()
-      login(request, user)
-      return redirect('core:index')
-  form=NewUserForm()
-  context={'form':form}
-  return render(request, 'patient/register.html', context)
-
-#profile
-@login_required # расширение, чтобы нельзя было зайти на страницу без входа в УЗ
+@login_required
+@group_required('patient')
 def patient_myinfo(request):
-    return render(request, 'patient/myinfo.html')
+    user = request.user
+    groups = user.groups.all()  # Получаем все группы, к которым принадлежит пользователь
+    return render(request, 'patient/myinfo.html', {'user': user, 'groups': groups})
 
-#def seller_profile(request,id):
-#  seller = User.objects.get(id=id)
+@login_required
+@group_required('patient')
+def patient_myrecords(request):
+    return render(request, 'patient/myrecords.html')
 
-#  context={
-#    'seller': seller
-#  }
-
-#  return render(request, 'users/sellersprofile.html',context)
+@login_required
+@group_required('patient')
+def patient_mymdeicalcard(request):
+    return render(request, 'patient/mymedicalcard.html')

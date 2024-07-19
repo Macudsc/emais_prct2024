@@ -1,10 +1,8 @@
 from django.contrib import admin
-
-# Register your models here.
-
 from .models import Product
-
-#admin.site.register(Product)
+from patient.models import PatientProfile
+from doctor.models import DoctorProfile
+from administrator.models import AdministratorProfile
 
 admin.site.site_header="My Django App"
 admin.site.site_title="Title of Django"
@@ -18,6 +16,9 @@ class ProductAdmin(admin.ModelAdmin):
 
   def make_zero(self, request, queryset):
     queryset.update(price=0)
-  
 
 admin.site.register(Product, ProductAdmin)
+
+admin.site.register(PatientProfile)
+admin.site.register(DoctorProfile)
+admin.site.register(AdministratorProfile)

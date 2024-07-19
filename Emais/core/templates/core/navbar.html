@@ -15,10 +15,9 @@
           <a href="#" class="py-4 px-2 text-gray-500 font-semibold">Моя информация</a>
           <a href="#" class="py-4 px-2 text-gray-500 font-semibold">Моя медкарта</a>
           {% if user.is_authenticated %}
-            <a href="{% url 'patient:myinfo' %}" class="py-4 px-2 text-orange-600 font-semibold">{{ user.username }}</a>
-            <a href="{% url 'patient:logout' %}" class="py-4 px-2 text-orange-600 font-semibold">Выход</a>
+            <a href="{% url 'core:logout' %}" class="py-4 px-2 text-orange-600 font-semibold">Выход</a>
             {% else %}
-            <a href="{% url 'patient:login' %}" class="py-4 px-2 text-orange-600 font-semibold">Вход</a>
+            <a href="{% url 'core:login' %}" class="py-4 px-2 text-orange-600 font-semibold">Вход</a>
           {% endif %}
         </div>
 

@@ -1,0 +1,11 @@
+{% load static %}
+<header class="bg-red-700 p-4 flex justify-between items-center">
+  <nav class="flex items-center space-x-4">
+      <a class="text-white text-lg" href="/">ЕМАИС</a>
+      <a class="text-white text-lg" href="/administrator/myinfo/">Моя информация</a>
+      <a class="text-white text-lg" href="/administrator/myusers/">Пользователи</a>
+  </nav>
+  {% if user.is_authenticated %}
+      <a href="{% url 'core:logout' %}" class="bg-red-800 text-white py-2 px-4 rounded hover:bg-red-900">Выход</a>
+  {% endif %}
+</header>

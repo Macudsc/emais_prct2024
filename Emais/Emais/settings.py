@@ -47,6 +47,8 @@ INSTALLED_APPS = [
 
     'core',
     'patient',
+    'doctor',
+    'administrator',
 ]
 
 MIDDLEWARE = [
@@ -76,6 +78,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                'core.context_processors.user_profile_url',  # добавляем наш контекстный процессор
             ],
         },
     },
@@ -170,6 +173,6 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 MEDIA_ROOT = BASE_DIR / 'media'
 MEDIA_URL = '/media/'
 
-LOGIN_REDIRECT_URL='patient:myinfo'
-LOGIN_URL = 'patient:login'
-LOGOUT_REDIRECT_URL='core:home'
+LOGIN_REDIRECT_URL = '/redirect_after_login/'
+LOGIN_URL = 'core:login'
+LOGOUT_REDIRECT_URL = 'core:home'

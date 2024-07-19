@@ -4,8 +4,7 @@ from django.urls import path, include
 #from core.views import UserViewSet, AppointmentViewSet, MedicalRecordViewSet
 from django.conf.urls.static import static
 from django.conf import settings
-from .views import bare
-from core.views import doctor_page, admin_page
+from .views import bare, redirect_after_login
 
 #router = DefaultRouter()
 #router.register(r'users', UserViewSet)
@@ -17,12 +16,13 @@ from core.views import doctor_page, admin_page
 
 urlpatterns = [
     path('', bare, name="bare"), # Корневой URL
-    path('administrator/myusers/', admin_page, name="admin_page"),
-    path('doctor/mypatients/', doctor_page, name="doctor_page"),
     #ковринок
-    path('admin/', admin.site.urls),
+    path('admin/', admin.site.urls, name="admin"),
     path("core/", include("core.urls", namespace="core")),
-    path("patient/", include("patient.urls", namespace="patient"))
+    path("patient/", include("patient.urls", namespace="patient")),
+    path('doctor/', include('doctor.urls', namespace="doctor")),
+    path('administrator/', include('administrator.urls', namespace="administrator")),
+    path('redirect_after_login/', redirect_after_login, name='redirect_after_login'),
 ]
 
 urlpatterns+=static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
