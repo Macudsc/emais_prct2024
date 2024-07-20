@@ -10,3 +10,4 @@ django-cors-headers
 Pillow
 weasyprint
 python-docx
+python-telegram-bot

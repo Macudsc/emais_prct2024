@@ -1,46 +1,23 @@
 {% load static %}
-{% comment %}{% if medical_records %}
-  {% for record in medical_records %}
-  <div class="medical-record-item bg-white p-6 rounded-lg shadow-md mb-4">
-      <h3 class="text-blue-600 text-xl font-semibold mb-2">Описание приёма</h3>
-      <p class="text-gray-700 mb-1">{{ record.description }}</p>
-      <h3 class="text-blue-600 text-xl font-semibold mb-2">Заключение</h3>
-      <p class="text-gray-700 mb-1">{{ record.conclusion }}</p>
-      <h3 class="text-blue-600 text-xl font-semibold mb-2">Дата завершения</h3>
-      <p class="text-gray-700 mb-1">{{ record.date_completed }}</p>
-      {% if record.image %}
-          <h3 class=" text-blue-600 text-xl font-semibold mb-2">Изображение</h3>
-          <img src="{{ record.image.url }}" alt="Medical Record Image" class="w-1/3 h-auto mb-4"/>
-      {% endif %}
-      <div class="buttons flex space-x-2">
-          <button class="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700">Экспорт как PDF</button>
-          <button class="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700">Экспорт как DOC</button>
-      </div>
-  </div>
-  {% endfor %}
+{% if medical_records %}
+    {% for record in medical_records %}
+    <div class="medical-record-item bg-white p-6 rounded-lg shadow-md mb-4">
+        <h3 class="text-blue-600 text-xl font-semibold mb-2">Описание приёма</h3>
+        <p class="text-gray-700 mb-1">{{ record.description }}</p>
+        <h3 class="text-blue-600 text-xl font-semibold mb-2">Заключение</h3>
+        <p class="text-gray-700 mb-1">{{ record.conclusion }}</p>
+        <h3 class="text-blue-600 text-xl font-semibold mb-2">Дата завершения</h3>
+        <p class="text-gray-700 mb-1">{{ record.date_completed }}</p>
+        {% if record.image_id %}
+            <h3 class="text-blue-600 text-xl font-semibold mb-2">Изображение</h3>
+            <img src="{% url 'doctor:load_image' record.image_id %}" alt="Medical Record Image" class="w-1/3 h-auto mb-4"/>
+        {% endif %}
+        <div class="buttons flex space-x-2">
+            <a href="{% url 'doctor:export_medical_record_pdf' record.id %}" class="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700">Экспорт как PDF</a>
+            <a href="{% url 'doctor:export_medical_record_doc' record.id %}" class="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700">Экспорт как DOC</a>
+        </div>
+    </div>
+    {% endfor %}
 {% else %}
     <p>Пустая медкарта.</p>
-{% endif %}{% endcomment %}
-
-{% if medical_records %}
-        {% for record in medical_records %}
-        <div class="medical-record-item bg-white p-6 rounded-lg shadow-md mb-4">
-            <h3 class="text-blue-600 text-xl font-semibold mb-2">Описание приёма</h3>
-            <p class="text-gray-700 mb-1">{{ record.description }}</p>
-            <h3 class="text-blue-600 text-xl font-semibold mb-2">Заключение</h3>
-            <p class="text-gray-700 mb-1">{{ record.conclusion }}</p>
-            <h3 class="text-blue-600 text-xl font-semibold mb-2">Дата завершения</h3>
-            <p class="text-gray-700 mb-1">{{ record.date_completed }}</p>
-            {% if record.image %}
-                <h3 class=" text-blue-600 text-xl font-semibold mb-2">Изображение</h3>
-                <img src="{{ record.image.url }}" alt="Medical Record Image" class=" w-1/3 h-auto mb-4"/>
-            {% endif %}
-            <div class="buttons flex space-x-2">
-                <a href="{% url 'doctor:export_medical_record_pdf' record.id %}" class="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700">Экспорт как PDF</a>
-                <a href="{% url 'doctor:export_medical_record_doc' record.id %}" class="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700">Экспорт как DOC</a>
-            </div>
-        </div>
-        {% endfor %}
-    {% else %}
-        <p>Пустая медкарта.</p>
-    {% endif %}
+{% endif %}

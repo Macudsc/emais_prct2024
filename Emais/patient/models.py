@@ -2,14 +2,16 @@ from django.db import models
 from django.contrib.auth.models import User
 from doctor.models import DoctorProfile
 
-#Profile
-#class PatientMyInfo(models.Model):
-#  user=models.OneToOneField(User, on_delete=models.CASCADE)
-#  image=models.ImageField(blank=True, upload_to='_myinfo_images')
-#  contact_number=models.CharField(max_length=50, default="+123456789")
+from pymongo import MongoClient
+from django.conf import settings
+import gridfs
 
-#  def __str__(self):
-#      return self.user.username
+from django.db.models.signals import post_delete
+from django.dispatch import receiver
+from django.contrib.auth.models import AbstractUser
+
+class User(AbstractUser):
+    chat_id = models.CharField(max_length=100, blank=True, null=True)
 
 class PatientProfile(models.Model):
     user=models.OneToOneField(User, on_delete=models.CASCADE)
@@ -34,25 +36,22 @@ class Appointment(models.Model):
     def __str__(self):
         return f'{self.patient.username} - {self.doctor} on {self.date} at {self.time}'
 
-#class MedicalRecord(models.Model):
-#    patient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='medical_records')
-#    doctor = models.ForeignKey(DoctorProfile, on_delete=models.CASCADE)
-#    appointment = models.ForeignKey(Appointment, on_delete=models.SET_NULL, null=True, blank=True) # ! ИГРУШКА ДЬЯВОЛА
-#    description = models.TextField()
-#    conclusion = models.TextField()
-#    image = models.ImageField(upload_to='medical_records/', blank=True, null=True)
-#    date_completed = models.DateTimeField(auto_now_add=True)
-
-#    def __str__(self):
-#        return f'{self.patient.username} - {self.date_completed}'
 class MedicalRecord(models.Model):
     patient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='medical_records')
-    doctor = models.ForeignKey(DoctorProfile, on_delete=models.SET_NULL, null=True, blank=True)  # Изменено здесь
+    doctor = models.ForeignKey(DoctorProfile, on_delete=models.SET_NULL, null=True, blank=True)
     appointment = models.ForeignKey(Appointment, on_delete=models.SET_NULL, null=True, blank=True)
     description = models.TextField()
     conclusion = models.TextField()
-    image = models.ImageField(upload_to='medical_records/', blank=True, null=True)
+    image_id = models.CharField(max_length=255, blank=True, null=True)
     date_completed = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f'{self.patient.username} - {self.date_completed}'
+
+    def save_image(self, image):
+        client = MongoClient(settings.MONGO_DB['host'], settings.MONGO_DB['port'])
+        db = client[settings.MONGO_DB['db']]
+        fs = gridfs.GridFS(db)
+        image_id = fs.put(image, filename=image.name)
+        self.image_id = image_id
+        self.save()

@@ -1,11 +1,28 @@
 {% extends "patient/base.html" %}
 {% block content %}
-<div class="px-4 pt-4 rounded-lg max-w-7xl mx-auto">
+{% comment %}<div class="px-4 pt-4 rounded-lg max-w-7xl mx-auto">
     <h1 class="text-3xl font-bold mb-4">Мои записи</h1>
     {% if appointments %}
         <ul>
             {% for appointment in appointments %}
                 <li>{{ appointment.date }} - {{ appointment.time }} с доктором {{ appointment.doctor.first_name }} {{ appointment.doctor.last_name }}</li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>У вас пока ещё нет записей.</p>
+    {% endif %}
+    <button id="openModal" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition mt-4">Записаться на приём</button>
+</div>{% endcomment %}
+
+<div class="px-4 pt-4 rounded-lg max-w-7xl mx-auto">
+    <h1 class="text-3xl font-bold mb-4">Мои записи</h1>
+    {% if appointments %}
+        <ul>
+            {% for appointment in appointments %}
+                <li>
+                    {{ appointment.date }} - {{ appointment.time }} с доктором {{ appointment.doctor.first_name }} {{ appointment.doctor.last_name }}
+                    <button class="bg-red-600 text-white px-2 py-1 rounded hover:bg-red-700 transition ml-2" onclick="deleteAppointment({{ appointment.id }})">Удалить</button>
+                </li>
             {% endfor %}
         </ul>
     {% else %}
@@ -174,6 +191,25 @@ function getCookie(name) {
         }
     }
     return cookieValue;
+}
+
+function deleteAppointment(appointmentId) {
+    const csrftoken = getCookie('csrftoken');
+
+    fetch(`/patient/delete_appointment/${appointmentId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': csrftoken
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Ошибка при удалении записи');
+        }
+    });
 }
 </script>
 {% endblock content %}

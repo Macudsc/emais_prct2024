@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'patient',
     'doctor',
     'administrator',
+    #'django_telegram_bot',
 ]
 
 MIDDLEWARE = [
@@ -117,7 +118,12 @@ DATABASES = {
     }
 }
 
-
+# MongoDB
+MONGO_DB = {
+    'db': 'emais_db_mon',
+    'host': 'localhost',
+    'port': 27017
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -178,3 +184,4 @@ MEDIA_URL = '/media/'
 LOGIN_REDIRECT_URL = '/redirect_after_login/'
 LOGIN_URL = 'core:login'
 LOGOUT_REDIRECT_URL = 'core:home'
+

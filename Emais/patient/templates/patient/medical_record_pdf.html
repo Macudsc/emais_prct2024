@@ -20,9 +20,9 @@
         <p>{{ record.conclusion }}</p>
         <h3>Дата завершения</h3>
         <p>{{ record.date_completed }}</p>
-        {% if record.image %}
+        {% if image_url %}
             <h3>Изображение</h3>
-            <img src="{{ record.image.url }}" alt="Medical Record Image"/>
+            <img src="{{ image_url }}" alt="Medical Record Image"/>
         {% endif %}
     </div>
 </body>

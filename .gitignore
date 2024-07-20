@@ -3,3 +3,4 @@ venv
 **/__pycache__/
 #Emais/testapp
 node_modules
+Emais/secrets.py
