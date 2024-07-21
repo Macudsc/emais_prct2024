@@ -33,8 +33,8 @@ from django.views.decorators.http import require_http_methods
 from patient.models import MedicalRecord, Appointment
 from django.http import JsonResponse
 
-
-#logger = logging.getLogger(__name__)
+from asgiref.sync import async_to_sync
+from patient.management.commands.runtelegrambot import send_notification
 
 #Моя информация
 @login_required
@@ -88,9 +88,12 @@ def complete_appointment(request, appointment_id):
 
         appointment.delete() # ! ИГРУШКА ДЬЯВОЛА
 
+
+        chat_id = appointment.patient.telegramuser.chat_id
+        async_to_sync(send_notification)(chat_id, f'Ваш приём завершён и исследование доступно к просмотру. Ссылка на медкарту: http://127.0.0.1:8000/patient/mymedicalcard/')
+
         return JsonResponse({'status': 'success'})
     return JsonResponse({'status': 'failed', 'error': 'Invalid request method'})
-
 
 # Просмотр медкарты
 @login_required

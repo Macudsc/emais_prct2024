@@ -19,6 +19,7 @@ from core.models import User
 from patient.models import Appointment, TelegramUser
 from apscheduler.schedulers.background import BackgroundScheduler
 from asgiref.sync import sync_to_async, async_to_sync
+
 TELEGRAM_TOKEN = tokenn
 
 class Command(BaseCommand):
@@ -62,7 +63,7 @@ def schedule_appointment_notifications(appointment):
     async_to_sync(send_notification)(appointment.patient.telegramuser.chat_id, message)
 
     appointment_datetime = timezone.make_aware(datetime.datetime.combine(appointment.date, appointment.time), timezone.get_current_timezone())
-
+    
     one_day_before = appointment_datetime - datetime.timedelta(days=1)
     if one_day_before > timezone.now():
         scheduler.add_job(async_to_sync(send_notification), 'date', run_date=one_day_before, args=[appointment.patient.telegramuser.chat_id, f'Напоминание: Вы записаны на приём завтра в {appointment.time}'])
@@ -77,4 +78,5 @@ def schedule_appointment_notifications(appointment):
     completion_time = appointment_datetime + datetime.timedelta(hours=1)
     if completion_time > timezone.now():
         scheduler.add_job(async_to_sync(send_notification), 'date', run_date=completion_time, args=[appointment.patient.telegramuser.chat_id, f'Ваш приём завершён {appointment.time}'])
+
 

@@ -49,6 +49,10 @@ from patient.models import Appointment, DoctorProfile
 from patient.management.commands.runtelegrambot import schedule_appointment_notifications
 from datetime import datetime
 
+from asgiref.sync import async_to_sync
+from patient.management.commands.runtelegrambot import send_notification
+
+
 @login_required
 @group_required('patient')
 def patient_myrecords(request):
@@ -60,33 +64,14 @@ def patient_myrecords(request):
 def delete_appointment(request, appointment_id):
     appointment = get_object_or_404(Appointment, id=appointment_id, patient=request.user)
     if request.method == 'POST':
+        chat_id = appointment.patient.telegramuser.chat_id
+        appointment_info = f'{appointment.date} в {appointment.time} к доктору {appointment.doctor.first_name} {appointment.doctor.last_name}'
         appointment.delete()
+        async_to_sync(send_notification)(chat_id, f'Ваша запись {appointment_info} отменена.')
         return JsonResponse({'success': True})
     return JsonResponse({'success': False}, status=400)
 
 
-
-#@csrf_exempt
-#@login_required
-#@group_required('patient')
-#def new_appointment(request):
-#    if request.method == 'POST':
-#        data = json.loads(request.body)
-#        doctor_id = data.get('doctor_id')
-#        date = data.get('date')
-#        time = data.get('time')
-
-#        doctor = DoctorProfile.objects.get(id=doctor_id)
-
-#        Appointment.objects.create(
-#            patient=request.user,
-#            doctor=doctor,
-#            date=date,
-#            time=time
-#        )
-
-#        return JsonResponse({'success': True})
-#    return JsonResponse({'success': False})
 @csrf_exempt
 @login_required
 @group_required('patient')

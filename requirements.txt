@@ -12,3 +12,4 @@ weasyprint
 python-docx
 python-telegram-bot
 apscheduler
+async_to_sync
