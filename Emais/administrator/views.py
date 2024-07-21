@@ -22,9 +22,6 @@ from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth.models import User
 from django.db.models import F, Case, When, Value, CharField
 
-#from django.contrib.auth.models import User
-#from django.db.models import F, Case, When, Value, CharField
-
 @login_required
 @group_required('administrator')
 def administrator_myinfo(request):

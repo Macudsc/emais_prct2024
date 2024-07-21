@@ -18,7 +18,7 @@ class PatientProfile(models.Model):
     email=models.EmailField(max_length=15, default="+mail@mail.com")
 
     def __str__(self):
-      return self.user.username
+        return self.user.username
 
 # Запись на приём
 class Appointment(models.Model):

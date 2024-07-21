@@ -8,7 +8,6 @@ from doctor.models import DoctorProfile
 
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse
-#from django.views.decorators.http import require_POST
 from django.utils import timezone
 from .models import Appointment, MedicalRecord
 import json
@@ -25,7 +24,6 @@ from .models import DoctorProfile, Appointment
 
 from django.utils.timezone import make_aware
 
-
 from django.http import HttpResponse
 from django.template.loader import render_to_string
 from weasyprint import HTML
@@ -34,24 +32,16 @@ from django.conf import settings
 from django.templatetags.static import static
 from weasyprint import HTML, CSS
 
-#from django.http import HttpResponse
 from docx import Document
 from docx.shared import Inches
 import os
-#from .models import MedicalRecord
+
 from pymongo import MongoClient
 import gridfs
 from bson import ObjectId
 
-#from django.shortcuts import render, get_object_or_404, redirect
-#from django.contrib.auth.decorators import login_required
-#from django.http import JsonResponse
-
 @login_required
 @group_required('patient')
-#def patient_myrecords(request):
-#    appointments = Appointment.objects.filter(patient=request.user)
-#    return render(request, 'patient/myrecords.html', {'appointments': appointments})
 def patient_myrecords(request):
     appointments = Appointment.objects.filter(patient=request.user)
     return render(request, 'patient/myrecords.html', {'appointments': appointments})
@@ -223,28 +213,3 @@ def load_image(request, image_id):
     response = HttpResponse(image.read(), content_type='image/jpeg')
     response['Content-Disposition'] = f'inline; filename={image.filename}'
     return response
-
-#@login_required
-#@group_required('patient')
-#def export_medical_record_doc(request, record_id):
-#    record = get_object_or_404(MedicalRecord, id=record_id)
-#    document = Document()
-#    document.add_heading('Медицинская запись', 0)
-
-#    document.add_heading('Описание приёма', level=1)
-#    document.add_paragraph(record.description)
-
-#    document.add_heading('Заключение', level=1)
-#    document.add_paragraph(record.conclusion)
-
-#    document.add_heading('Дата завершения', level=1)
-#    document.add_paragraph(str(record.date_completed))
-
-#    if record.image:
-#        document.add_heading('Изображение', level=1)
-#        document.add_picture(os.path.join(settings.MEDIA_ROOT, record.image.name), width=Inches(4.0))
-
-#    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
-#    response['Content-Disposition'] = f'attachment; filename="medical_record_{record_id}.docx"'
-#    document.save(response)
-#    return response

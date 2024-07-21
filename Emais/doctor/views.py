@@ -14,29 +14,12 @@ from django.core.files.storage import FileSystemStorage
 
 from django.http import HttpResponse
 from django.template.loader import render_to_string
-#from weasyprint import HTML
-
-#from django.conf import settings
 from django.templatetags.static import static
 from weasyprint import HTML, CSS
-#from pymongo import MongoClient
-
-#from django.http import HttpResponse
 from docx import Document
 from docx.shared import Inches
 import os
-#from .models import MedicalRecord
-
-#import gridfs
-#from pymongo import MongoClient
-#from django.conf import settings
 from django.http import HttpResponse, JsonResponse
-#from django.shortcuts import get_object_or_404
-#from django.contrib.auth.decorators import login_required
-#from docx import Document
-#from docx.shared import Inches
-#from doctor.models import DoctorProfile
-#from patient.models import Appointment
 from django.urls import reverse
 from django.utils.html import format_html
 
@@ -112,14 +95,6 @@ def complete_appointment(request, appointment_id):
 # Просмотр медкарты
 @login_required
 @group_required('doctor')
-#def view_medical_records(request, patient_id):
-#    patient = get_object_or_404(User, id=patient_id)
-#    medical_records = MedicalRecord.objects.filter(patient=patient)
-#    context = {
-#        'patient': patient,
-#        'medical_records': medical_records,
-#    }
-#    return render(request, 'doctor/medical_records.html', context)
 @require_http_methods(["GET"])
 def view_medical_records(request, patient_id):
     medical_records = MedicalRecord.objects.filter(patient_id=patient_id)

@@ -1,8 +1,5 @@
 from django.urls import path
-#from .views import register
-#from .views import *
 from . import views
-#from django.contrib.auth.views import LoginView, LogoutView
 
 app_name="patient"
 

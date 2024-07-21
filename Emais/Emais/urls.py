@@ -6,14 +6,6 @@ from django.conf.urls.static import static
 from django.conf import settings
 from .views import bare, redirect_after_login
 
-#router = DefaultRouter()
-#router.register(r'users', UserViewSet)
-#router.register(r'appointments', AppointmentViewSet)
-#router.register(r'medical_records', MedicalRecordViewSet)
-
-#from core.views import export_records_csv, export_records_pdf, home, patient_page, doctor_page, admin_page, items
-#from core.views import *
-
 urlpatterns = [
     path('', bare, name="bare"), # Корневой URL
     #ковринок

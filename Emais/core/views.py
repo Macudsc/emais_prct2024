@@ -25,21 +25,6 @@ def register(request):
     context = {'form': form}
     return render(request, 'core/register.html', context)
 
-
-# основные функции
-def export_records_csv(request):
-    #records = MedicalRecord.objects.all().values()
-    #df = pd.DataFrame(records)
-    #response = HttpResponse(content_type='text/csv')
-    #response['Content-Disposition'] = 'attachment; filename="medical_records.csv"'
-    #df.to_csv(path_or_buf=response, index=False)
-    #return response
-    pass
-
-def export_records_pdf(request):
-    # добавить экспорт в PDF с ReportLab
-    pass
-
 def home(request):
     return render(request, 'core/home.html')
 
