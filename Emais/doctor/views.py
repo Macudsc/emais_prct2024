@@ -25,6 +25,8 @@ from django.views.decorators.http import require_http_methods
 from patient.models import MedicalRecord, Appointment
 from asgiref.sync import async_to_sync
 from patient.management.commands.runtelegrambot import send_notification
+from django.core.files.uploadedfile import UploadedFile
+
 
 #Моя информация
 @login_required
@@ -57,12 +59,44 @@ def doctor_mypatients(request):
 # Заполнить исследование
 @login_required
 @group_required('doctor')
+#def complete_appointment(request, appointment_id):
+#    appointment = get_object_or_404(Appointment, id=appointment_id)
+#    if request.method == 'POST':
+#        description = request.POST.get('description')
+#        conclusion = request.POST.get('conclusion')
+#        image = request.FILES.get('upload')
+
+#        medical_record = MedicalRecord(
+#            patient=appointment.patient,
+#            doctor=appointment.doctor,
+#            appointment=appointment,
+#            description=description,
+#            conclusion=conclusion
+#        )
+#        if image:
+#            medical_record.save_image(image)
+#        else:
+#            medical_record.save()
+
+#        appointment.delete() # ! ИГРУШКА ДЬЯВОЛА
+
+
+#        chat_id = appointment.patient.telegramuser.chat_id
+#        async_to_sync(send_notification)(chat_id, f'Ваш приём завершён и исследование доступно к просмотру. Ссылка на медкарту: http://127.0.0.1:8000/patient/mymedicalcard/')
+
+#        return JsonResponse({'status': 'success'})
+#    return JsonResponse({'status': 'failed', 'error': 'Invalid request method'})
 def complete_appointment(request, appointment_id):
     appointment = get_object_or_404(Appointment, id=appointment_id)
     if request.method == 'POST':
         description = request.POST.get('description')
         conclusion = request.POST.get('conclusion')
         image = request.FILES.get('upload')
+
+        # Проверка размера файла
+        max_size_mb = 3
+        if image and isinstance(image, UploadedFile) and image.size > max_size_mb * 1024 * 1024:
+            return JsonResponse({'status': 'failed', 'error': 'Размер файла превышает 3 МБ.'})
 
         medical_record = MedicalRecord(
             patient=appointment.patient,
@@ -78,7 +112,6 @@ def complete_appointment(request, appointment_id):
 
         appointment.delete() # ! ИГРУШКА ДЬЯВОЛА
 
-
         chat_id = appointment.patient.telegramuser.chat_id
         async_to_sync(send_notification)(chat_id, f'Ваш приём завершён и исследование доступно к просмотру. Ссылка на медкарту: http://127.0.0.1:8000/patient/mymedicalcard/')
 
@@ -89,8 +122,11 @@ def complete_appointment(request, appointment_id):
 @login_required
 @group_required('doctor')
 @require_http_methods(["GET"])
+#def view_medical_records(request, patient_id):
+#    medical_records = MedicalRecord.objects.filter(patient_id=patient_id)
+#    return render(request, 'doctor/medical_records.html', {'medical_records': medical_records})
 def view_medical_records(request, patient_id):
-    medical_records = MedicalRecord.objects.filter(patient_id=patient_id)
+    medical_records = MedicalRecord.objects.filter(patient_id=patient_id).order_by('-date_completed')
     return render(request, 'doctor/medical_records.html', {'medical_records': medical_records})
 
 @login_required

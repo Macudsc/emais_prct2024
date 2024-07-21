@@ -20,19 +20,47 @@
     </div>
 </div>
 
+{% comment %}<div id="complete-appointment-modal" class="modal hidden">
+    <div class="modal-content bg-white p-6 rounded-lg shadow-md">
+        <span class="close" onclick="closeCompleteAppointmentModal()">&times;</span>
+        <h2 class="text-xl font-semibold mb-4">Заполнить исследование для пациента: <span id="modal-patient-name"></span></h2>
+        <form id="complete-appointment-form" enctype="multipart/form-data">
+            <label for="description">Описание приёма</label>
+            <textarea id="description" name="description" rows="4" class="w-full p-2 border rounded mb-4" maxlength="2000"></textarea>
+            <p id="description-counter" class="text-gray-500 text-right">2000 символов осталось</p>
+
+            <label for="conclusion">Заключение</label>
+            <textarea id="conclusion" name="conclusion" rows="4" class="w-full p-2 border rounded mb-4" maxlength="2000"></textarea>
+            <p id="conclusion-counter" class="text-gray-500 text-right">2000 символов осталось</p>
+
+            <label for="images">Загрузить изображения</label>
+            <input class="w-full p-2 border rounded mb-4" type="file" accept="image/*" name="upload" id="upload">
+            <div class="buttons flex space-x-2">
+                <button class="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700" type="submit">Добавить исследование</button>
+                <button type="button" class="bg-gray-600 text-white py-2 px-4 rounded hover:bg-gray-700" onclick="closeCompleteAppointmentModal()">Отмена</button>
+            </div>
+        </form>
+    </div>
+</div>{% endcomment %}
 <div id="complete-appointment-modal" class="modal hidden">
     <div class="modal-content bg-white p-6 rounded-lg shadow-md">
         <span class="close" onclick="closeCompleteAppointmentModal()">&times;</span>
         <h2 class="text-xl font-semibold mb-4">Заполнить исследование для пациента: <span id="modal-patient-name"></span></h2>
         <form id="complete-appointment-form" enctype="multipart/form-data">
             <label for="description">Описание приёма</label>
-            <textarea id="description" name="description" rows="4" class="w-full p-2 border rounded mb-4"></textarea>
+            <textarea id="description" name="description" rows="4" class="w-full p-2 border rounded mb-4" maxlength="2000"></textarea>
+            <p id="description-counter" class="text-gray-500 text-right">2000 символов осталось</p>
+
             <label for="conclusion">Заключение</label>
-            <textarea id="conclusion" name="conclusion" rows="4" class="w-full p-2 border rounded mb-4"></textarea>
-            <label for="images">Загрузить изображения</label>
-            <input class="w-full p-2 border rounded mb-4" type="file" accept="image/*" name="upload" id="upload">
+            <textarea id="conclusion" name="conclusion" rows="4" class="w-full p-2 border rounded mb-4" maxlength="2000"></textarea>
+            <p id="conclusion-counter" class="text-gray-500 text-right">2000 символов осталось</p>
+
+            <label for="images">Загрузить изображения (макс. 3 МБ)</label>
+            <input class="w-full p-2 border rounded mb-2" type="file" accept="image/*" name="upload" id="upload" onchange="validateFileSize()">
+            <p id="file-size-error" class="text-red-500 mb-2"></p>
+
             <div class="buttons flex space-x-2">
-                <button class="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700" type="submit">Добавить исследование</button>
+                <button id="submit-button" class="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700" type="submit" disabled>Добавить исследование</button>
                 <button type="button" class="bg-gray-600 text-white py-2 px-4 rounded hover:bg-gray-700" onclick="closeCompleteAppointmentModal()">Отмена</button>
             </div>
         </form>
@@ -84,6 +112,37 @@
 
     function closeViewMedicalRecordsModal() {
         document.getElementById('view-medical-records-modal').classList.add('hidden');
+    }
+
+    function updateCharacterCounter() {
+        const descriptionField = document.getElementById('description');
+        const conclusionField = document.getElementById('conclusion');
+        const descriptionCounter = document.getElementById('description-counter');
+        const conclusionCounter = document.getElementById('conclusion-counter');
+
+        const maxLength = 2000;
+        descriptionCounter.textContent = `${maxLength - descriptionField.value.length} символов осталось`;
+        conclusionCounter.textContent = `${maxLength - conclusionField.value.length} символов осталось`;
+    }
+
+    document.getElementById('description').addEventListener('input', updateCharacterCounter);
+    document.getElementById('conclusion').addEventListener('input', updateCharacterCounter);
+
+    function validateFileSize() {
+        const fileInput = document.getElementById('upload');
+        const submitButton = document.getElementById('submit-button');
+        const fileSize = fileInput.files[0] ? fileInput.files[0].size / (1024 * 1024) : 0; //мб
+        const maxSize = 3;
+        const errorElement = document.getElementById('file-size-error');
+
+        if (fileSize > maxSize) {
+            errorElement.textContent = 'Файл слишком большой. Максимальный размер - 3 МБ.';
+            fileInput.value = '';
+            submitButton.disabled = true;
+        } else {
+            errorElement.textContent = '';
+            submitButton.disabled = false;
+        }
     }
 </script>
 {% endblock content %}

@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 from pathlib import Path
 import os
+from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 #BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -50,6 +51,7 @@ INSTALLED_APPS = [
     'patient',
     'doctor',
     'administrator',
+    'axes',
     #'django_telegram_bot',
 ]
 
@@ -64,8 +66,19 @@ MIDDLEWARE = [
     #---
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
-
+    'axes.middleware.AxesMiddleware',
 ]
+
+AUTHENTICATION_BACKENDS = [ # ! ИГРУШКА ДЬЯВОЛА №2
+    #'axes.backends.AxesBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
+
+AXES_FAILURE_LIMIT = 3  # Количество попыток
+AXES_COOLOFF_TIME = timedelta(seconds=10)  # Таймаут после достижения лимита в секундах
+AXES_LOCKOUT_PARAMETERS = ['username']  # Блокировка на основе имени пользователя
+AXES_RESET_ON_SUCCESS = True  # Сброс неудачных попыток при успешном входе
+
 
 ROOT_URLCONF = "Emais.urls"
 
@@ -144,7 +157,7 @@ AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
         'OPTIONS': {
-            'min_length': 1,
+            'min_length': 4,
         }
     },
 ]

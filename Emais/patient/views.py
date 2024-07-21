@@ -127,9 +127,17 @@ def patient_myinfo(request):
 
 @login_required
 @group_required('patient')
+#def patient_mymedicalcard(request):
+#    user = request.user
+#    medical_records = MedicalRecord.objects.filter(patient=user)
+#    context = {
+#        'patient': user,
+#        'medical_records': medical_records,
+#    }
+#    return render(request, 'patient/mymedicalcard.html', context)
 def patient_mymedicalcard(request):
     user = request.user
-    medical_records = MedicalRecord.objects.filter(patient=user)
+    medical_records = MedicalRecord.objects.filter(patient=user).order_by('-date_completed')
     context = {
         'patient': user,
         'medical_records': medical_records,

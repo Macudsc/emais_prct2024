@@ -4,55 +4,74 @@
 <meta charset="UTF-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-{% comment %}<link rel="stylesheet" href="{% static 'core/styles.css' %}">{% endcomment %}
 <script src="https://cdn.tailwindcss.com"></script>
-<title>Document</title>
+<title>Регистрация</title>
 </head>
-<body>
-    <!--<div class="flex items-center justify-center py-5">
-        <div>
-            <h1 class="text-2xl mt-10 mb-2 font-bold text-center">Регистрация пациента</h1>
-            <form class="bg-white shadow-lg rounded px-8 pt-6 pb-8" method="post" style="width: 500px;">
+<body class="bg-gray-100">
+    <div class="flex items-center justify-center h-2/3">
+        <div class="w-full max-w-md mt-16">
+            <h1 class="text-2xl mt-10 mb-5 font-bold text-center">Регистрация пациента</h1>
+            <form class="bg-white shadow-lg rounded px-8 pt-6 pb-8 mb-4" method="post">
                 {% csrf_token %}
-                <div class="mb-6">
-                    <label class="block text-gray-700 text-sm font-bold mb-2">Имя пользователя</label>
-                    <p class="focus:outline-noneshadow appearance-none border rounded py-2 px-3 mr-10 text-gray-700 leading-tight">{{form.username}}</p>
-                    <label class="block text-gray-700 text-sm font-bold mt-5 mb-2">Электронная почта</label>
-                    <p class="focus:outline-none shadow appearance-none border rounded py-2 px-3 mr-10 text-gray-700 leading-tight">{{form.email}}</p>
-                    <label class="block text-gray-700 text-sm font-bold mt-5 mb-2">Пароль</label>
-                    <p class="focus:outline-noneshadow appearance-none border rounded py-2 px-3 mr-10 text-gray-700 leading-tight">{{form.password1}}</p>
-                    <label class="block text-gray-700 text-sm font-bold mt-5 mb-2">Повторите пароль</label>
-                    <p class="focus:outline-noneshadow appearance-none border rounded py-2 px-3 mr-10 text-gray-700 leading-tight">{{form.password2}}</p>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="id_username">Имя пользователя</label>
+                    {{ form.username }}
+                    {% if form.username.errors %}
+                        <p class="text-red-500 text-xs italic">{{ form.username.errors|join:", " }}</p>
+                    {% endif %}
                 </div>
-                <div class="flex items-center justify-around">
-                    <button class="bg-green-500 text-white px-5 py-2 rounded hover:bg-green-600 transition duration-300" type="submit">Зарегистрироваться</button>
-                </div>
-            </form>
-        </div>
-        
-    </div>-->
 
-    
-    <div class="flex items-center justify-center py-5">
-        <div>
-            <h1 class="text-2xl mt-10 mb-2 font-bold text-center">Регистрация пациента</h1>
-            <form class="bg-white shadow-lg rounded px-8 pt-6 pb-8" method="post" style="width: 500px;">
-                {% csrf_token %}
-                <div class="mb-6">
-                    <label class="block text-gray-700 text-sm font-bold mb-2">Имя пользователя</label>
-                    <p class="focus:outline-none shadow appearance-none border rounded py-2 px-3 mr-10 text-gray-700 leading-tight">{{ form.username }}</p>
-                    <label class="block text-gray-700 text-sm font-bold mt-5 mb-2">Электронная почта</label>
-                    <p class="focus:outline-none shadow appearance-none border rounded py-2 px-3 mr-10 text-gray-700 leading-tight">{{ form.email }}</p>
-                    <label class="block text-gray-700 text-sm font-bold mt-5 mb-2">Пароль</label>
-                    <p class="focus:outline-none shadow appearance-none border rounded py-2 px-3 mr-10 text-gray-700 leading-tight">{{ form.password1 }}</p>
-                    <label class="block text-gray-700 text-sm font-bold mt-5 mb-2">Повторите пароль</label>
-                    <p class="focus:outline-none shadow appearance-none border rounded py-2 px-3 mr-10 text-gray-700 leading-tight">{{ form.password2 }}</p>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="id_email">Электронная почта</label>
+                    {{ form.email }}
+                    {% if form.email.errors %}
+                        <p class="text-red-500 text-xs italic">{{ form.email.errors|join:", " }}</p>
+                    {% endif %}
                 </div>
-                <div class="flex items-center justify-around">
-                    <button class="bg-green-500 text-white px-5 py-2 rounded hover:bg-green-600 transition duration-300" type="submit">Зарегистрироваться</button>
+
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="id_password1">Пароль</label>
+                    <div class="relative">
+                        {{ form.password1 }}
+                        <span class="absolute inset-y-0 right-0 flex items-center pr-3 cursor-pointer" onclick="togglePasswordVisibility('id_password1')">👁️</span>
+                    </div>
+                    {% if form.password1.errors %}
+                        <p class="text-red-500 text-xs italic">{{ form.password1.errors|join:", " }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="id_password2">Повторите пароль</label>
+                    <div class="relative">
+                        {{ form.password2 }}
+                        <span class="absolute inset-y-0 right-0 flex items-center pr-3 cursor-pointer" onclick="togglePasswordVisibility('id_password2')">👁️</span>
+                    </div>
+                    {% if form.password2.errors %}
+                        <p class="text-red-500 text-xs italic">{{ form.password2.errors|join:", " }}</p>
+                    {% endif %}
+                </div>
+
+                {% if form.non_field_errors %}
+                    <div class="mb-4">
+                        <p class="text-red-500 text-xs italic">{{ form.non_field_errors|join:", " }}</p>
+                    </div>
+                {% endif %}
+
+                <div class="flex items-center justify-center">
+                    <button class="bg-green-500 text-white px-5 mt-4 py-2 rounded hover:bg-green-600 transition duration-300" type="submit">Зарегистрироваться</button>
                 </div>
             </form>
+            <div class="flex items-center justify-center">
+                <a href="/core/" class="inline-block bg-gray-400 text-white text-center mt-2 px-4 py-2 rounded-md hover:bg-gray-500 transition">На главную</a>
+            </div>
         </div>
     </div>
+    <script>
+        function togglePasswordVisibility(id) {
+            var input = document.getElementById(id);
+            var type = input.getAttribute('type') === 'password' ? 'text' : 'password';
+            input.setAttribute('type', type);
+        }
+    </script>
 </body>
 </html>
