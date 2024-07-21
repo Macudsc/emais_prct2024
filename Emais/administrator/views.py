@@ -3,23 +3,15 @@ from django.contrib.auth.models import User
 from core.decorators import group_required
 from django.shortcuts import render, redirect
 from .models import AdministratorProfile
-#from .forms import AdministratorProfileForm
-
 from django.shortcuts import get_object_or_404, redirect, render
-#from django.contrib.auth.decorators import login_required
 from django.urls import reverse
-
 from administrator.forms import AdministratorProfileForm
 from doctor.forms import DoctorProfileForm
 from patient.forms import PatientProfileForm
-
-#from administrator.models import AdministratorProfile
 from doctor.models import DoctorProfile
 from patient.models import PatientProfile
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import user_passes_test
-
-from django.contrib.auth.models import User
 from django.db.models import F, Case, When, Value, CharField
 
 @login_required

@@ -2,10 +2,8 @@ from django.contrib.auth.decorators import login_required
 from .models import PatientProfile
 from .forms import PatientProfileForm
 from core.decorators import group_required
-
 from django.views.decorators.csrf import csrf_exempt
 from doctor.models import DoctorProfile
-
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse
 from django.utils import timezone
@@ -13,42 +11,22 @@ from .models import Appointment, MedicalRecord
 import json
 import datetime
 from django.contrib.auth.models import User
-
-from django.shortcuts import render, redirect
-from django.http import JsonResponse
-from django.contrib.auth.decorators import login_required
-from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
 from datetime import timedelta, datetime
-from .models import DoctorProfile, Appointment
-
 from django.utils.timezone import make_aware
-
 from django.http import HttpResponse
 from django.template.loader import render_to_string
-from weasyprint import HTML
-
 from django.conf import settings
 from django.templatetags.static import static
 from weasyprint import HTML, CSS
-
 from docx import Document
 from docx.shared import Inches
 import os
-
 from pymongo import MongoClient
 import gridfs
 from bson import ObjectId
-
-import json
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth.decorators import login_required
-from core.decorators import group_required
-from patient.models import Appointment, DoctorProfile
 from patient.management.commands.runtelegrambot import schedule_appointment_notifications
 from datetime import datetime
-
 from asgiref.sync import async_to_sync
 from patient.management.commands.runtelegrambot import send_notification
 

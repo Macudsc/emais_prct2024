@@ -1,17 +1,13 @@
 from .forms import DoctorProfileForm
 from django.contrib.auth.models import User
 import logging
-
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from core.decorators import group_required
 from django.http import JsonResponse
 from .models import DoctorProfile
-from patient.models import Appointment, MedicalRecord
-
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage
-
 from django.http import HttpResponse
 from django.template.loader import render_to_string
 from django.templatetags.static import static
@@ -22,17 +18,11 @@ import os
 from django.http import HttpResponse, JsonResponse
 from django.urls import reverse
 from django.utils.html import format_html
-
 from pymongo import MongoClient
 import gridfs
 from bson import ObjectId
-
-from django.shortcuts import render, get_object_or_404
-from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
 from patient.models import MedicalRecord, Appointment
-from django.http import JsonResponse
-
 from asgiref.sync import async_to_sync
 from patient.management.commands.runtelegrambot import send_notification
 
