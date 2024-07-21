@@ -11,3 +11,4 @@ Pillow
 weasyprint
 python-docx
 python-telegram-bot
+apscheduler

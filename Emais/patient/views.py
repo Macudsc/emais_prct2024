@@ -40,6 +40,15 @@ from pymongo import MongoClient
 import gridfs
 from bson import ObjectId
 
+import json
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.decorators import login_required
+from core.decorators import group_required
+from patient.models import Appointment, DoctorProfile
+from patient.management.commands.runtelegrambot import schedule_appointment_notifications
+from datetime import datetime
+
 @login_required
 @group_required('patient')
 def patient_myrecords(request):
@@ -55,6 +64,29 @@ def delete_appointment(request, appointment_id):
         return JsonResponse({'success': True})
     return JsonResponse({'success': False}, status=400)
 
+
+
+#@csrf_exempt
+#@login_required
+#@group_required('patient')
+#def new_appointment(request):
+#    if request.method == 'POST':
+#        data = json.loads(request.body)
+#        doctor_id = data.get('doctor_id')
+#        date = data.get('date')
+#        time = data.get('time')
+
+#        doctor = DoctorProfile.objects.get(id=doctor_id)
+
+#        Appointment.objects.create(
+#            patient=request.user,
+#            doctor=doctor,
+#            date=date,
+#            time=time
+#        )
+
+#        return JsonResponse({'success': True})
+#    return JsonResponse({'success': False})
 @csrf_exempt
 @login_required
 @group_required('patient')
@@ -62,17 +94,23 @@ def new_appointment(request):
     if request.method == 'POST':
         data = json.loads(request.body)
         doctor_id = data.get('doctor_id')
-        date = data.get('date')
-        time = data.get('time')
+        date_str = data.get('date')
+        time_str = data.get('time')
+
+        # Строки в объекты date, time
+        date = datetime.strptime(date_str, "%Y-%m-%d").date()
+        time = datetime.strptime(time_str, "%H:%M").time()
 
         doctor = DoctorProfile.objects.get(id=doctor_id)
 
-        Appointment.objects.create(
+        appointment = Appointment.objects.create(
             patient=request.user,
             doctor=doctor,
             date=date,
             time=time
         )
+
+        schedule_appointment_notifications(appointment)
 
         return JsonResponse({'success': True})
     return JsonResponse({'success': False})

@@ -6,6 +6,15 @@ from pymongo import MongoClient
 from django.conf import settings
 import gridfs
 
+
+class TelegramUser(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    chat_id = models.CharField(max_length=100)
+    username = models.CharField(max_length=150)
+    
+    def __str__(self):
+        return f"{self.username} - {self.chat_id}"
+
 class PatientProfile(models.Model):
     user=models.OneToOneField(User, on_delete=models.CASCADE)
     first_name=models.CharField(max_length=100)
