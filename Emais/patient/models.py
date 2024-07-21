@@ -6,13 +6,6 @@ from pymongo import MongoClient
 from django.conf import settings
 import gridfs
 
-from django.db.models.signals import post_delete
-from django.dispatch import receiver
-from django.contrib.auth.models import AbstractUser
-
-class User(AbstractUser):
-    chat_id = models.CharField(max_length=100, blank=True, null=True)
-
 class PatientProfile(models.Model):
     user=models.OneToOneField(User, on_delete=models.CASCADE)
     first_name=models.CharField(max_length=100)
