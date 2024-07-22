@@ -97,9 +97,6 @@ def complete_appointment(request, appointment_id):
 @login_required
 @group_required('doctor')
 @require_http_methods(["GET"])
-#def view_medical_records(request, patient_id):
-#    medical_records = MedicalRecord.objects.filter(patient_id=patient_id)
-#    return render(request, 'doctor/medical_records.html', {'medical_records': medical_records})
 def view_medical_records(request, patient_id):
     medical_records = MedicalRecord.objects.filter(patient_id=patient_id).order_by('-date_completed')
     return render(request, 'doctor/medical_records.html', {'medical_records': medical_records})
