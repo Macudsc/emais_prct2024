@@ -28,8 +28,11 @@ SECRET_KEY = "django-insecure-yh2kq$&t-46^=-0b#s=466!87i_17sme=+=5z@u5x_(6_vjaf^
 # Это выключить перед продом
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+#DEBUG=False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+#  'localhost',
+]
 
 
 # Application definition
@@ -53,6 +56,7 @@ INSTALLED_APPS = [
     'administrator',
     'axes',
     #'django_telegram_bot',
+    'sslserver',
 ]
 
 MIDDLEWARE = [
@@ -76,7 +80,7 @@ AUTHENTICATION_BACKENDS = [ # ! ИГРУШКА ДЬЯВОЛА №2
 
 AXES_FAILURE_LIMIT = 3  # Количество попыток
 AXES_COOLOFF_TIME = timedelta(seconds=10)  # Таймаут после достижения лимита в секундах
-AXES_LOCKOUT_PARAMETERS = ['username']  # Блокировка на основе имени пользователя
+AXES_LOCKOUT_PARAMETERS = ['username']  # Блокировка по имени пользователя
 AXES_RESET_ON_SUCCESS = True  # Сброс неудачных попыток при успешном входе
 
 
@@ -196,5 +200,5 @@ MEDIA_URL = '/media/'
 
 LOGIN_REDIRECT_URL = '/redirect_after_login/'
 LOGIN_URL = 'core:login'
-LOGOUT_REDIRECT_URL = 'core:home'
+LOGOUT_REDIRECT_URL = '/'
 

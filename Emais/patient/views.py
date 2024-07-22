@@ -42,13 +42,15 @@ def patient_myrecords(request):
 def delete_appointment(request, appointment_id):
     appointment = get_object_or_404(Appointment, id=appointment_id, patient=request.user)
     if request.method == 'POST':
-        chat_id = appointment.patient.telegramuser.chat_id
         appointment_info = f'{appointment.date} в {appointment.time} к доктору {appointment.doctor.first_name} {appointment.doctor.last_name}'
+        try:
+            chat_id = appointment.patient.telegramuser.chat_id
+            async_to_sync(send_notification)(chat_id, f'Ваша запись {appointment_info} отменена.')
+        except User.telegramuser.RelatedObjectDoesNotExist:
+            pass
         appointment.delete()
-        async_to_sync(send_notification)(chat_id, f'Ваша запись {appointment_info} отменена.')
         return JsonResponse({'success': True})
     return JsonResponse({'success': False}, status=400)
-
 
 @csrf_exempt
 @login_required
@@ -60,7 +62,6 @@ def new_appointment(request):
         date_str = data.get('date')
         time_str = data.get('time')
 
-        # Строки в объекты date, time
         date = datetime.strptime(date_str, "%Y-%m-%d").date()
         time = datetime.strptime(time_str, "%H:%M").time()
 
@@ -73,7 +74,10 @@ def new_appointment(request):
             time=time
         )
 
-        schedule_appointment_notifications(appointment)
+        try:
+            schedule_appointment_notifications(appointment)
+        except User.telegramuser.RelatedObjectDoesNotExist:
+            pass
 
         return JsonResponse({'success': True})
     return JsonResponse({'success': False})
@@ -127,14 +131,6 @@ def patient_myinfo(request):
 
 @login_required
 @group_required('patient')
-#def patient_mymedicalcard(request):
-#    user = request.user
-#    medical_records = MedicalRecord.objects.filter(patient=user)
-#    context = {
-#        'patient': user,
-#        'medical_records': medical_records,
-#    }
-#    return render(request, 'patient/mymedicalcard.html', context)
 def patient_mymedicalcard(request):
     user = request.user
     medical_records = MedicalRecord.objects.filter(patient=user).order_by('-date_completed')

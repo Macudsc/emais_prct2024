@@ -5,9 +5,11 @@ from django.urls import path, include
 from django.conf.urls.static import static
 from django.conf import settings
 from .views import bare, redirect_after_login
+from core.views import home
 
 urlpatterns = [
-    path('', bare, name="bare"), # Корневой URL
+    path('', home, name='home'), 
+    path('bare/', bare, name="bare"), # Корневой URL
     #ковринок
     path('admin/', admin.site.urls, name="admin"),
     path("core/", include("core.urls", namespace="core")),

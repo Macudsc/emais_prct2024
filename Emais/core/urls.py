@@ -7,7 +7,7 @@ from .forms import CustomAuthenticationForm
 app_name = "core"
 
 urlpatterns = [
-    path('', home, name='home'),  # Корневой URL
+    #path('', home, name='home'),  # Корневой URL
 
     # Тестовые маршруты
     path('index/',index, name="index"),

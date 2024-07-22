@@ -1,6 +1,7 @@
 {% extends "patient/base.html" %}
 {% block content %}
-<div class="px-4 pt-4 rounded-lg max-w-7xl mx-auto">
+
+{% comment %}<div class="px-4 pt-4 rounded-lg max-w-7xl mx-auto">
     <h1>Info</h1>
     <p>Patient, your username: {{ user.username }}</p>
     <p>user ID: {{ user.id }}</p>
@@ -8,7 +9,7 @@
         {{ group.name }} (ID: {{ group.id }})
     {% endfor %}
     </p>
-</div>
+</div>{% endcomment %}
 
 <div class="content py-8">
     <div class="bg-white p-6 rounded-lg shadow-lg max-w-lg mx-auto relative">

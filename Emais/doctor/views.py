@@ -59,33 +59,6 @@ def doctor_mypatients(request):
 # Заполнить исследование
 @login_required
 @group_required('doctor')
-#def complete_appointment(request, appointment_id):
-#    appointment = get_object_or_404(Appointment, id=appointment_id)
-#    if request.method == 'POST':
-#        description = request.POST.get('description')
-#        conclusion = request.POST.get('conclusion')
-#        image = request.FILES.get('upload')
-
-#        medical_record = MedicalRecord(
-#            patient=appointment.patient,
-#            doctor=appointment.doctor,
-#            appointment=appointment,
-#            description=description,
-#            conclusion=conclusion
-#        )
-#        if image:
-#            medical_record.save_image(image)
-#        else:
-#            medical_record.save()
-
-#        appointment.delete() # ! ИГРУШКА ДЬЯВОЛА
-
-
-#        chat_id = appointment.patient.telegramuser.chat_id
-#        async_to_sync(send_notification)(chat_id, f'Ваш приём завершён и исследование доступно к просмотру. Ссылка на медкарту: http://127.0.0.1:8000/patient/mymedicalcard/')
-
-#        return JsonResponse({'status': 'success'})
-#    return JsonResponse({'status': 'failed', 'error': 'Invalid request method'})
 def complete_appointment(request, appointment_id):
     appointment = get_object_or_404(Appointment, id=appointment_id)
     if request.method == 'POST':
@@ -93,7 +66,6 @@ def complete_appointment(request, appointment_id):
         conclusion = request.POST.get('conclusion')
         image = request.FILES.get('upload')
 
-        # Проверка размера файла
         max_size_mb = 3
         if image and isinstance(image, UploadedFile) and image.size > max_size_mb * 1024 * 1024:
             return JsonResponse({'status': 'failed', 'error': 'Размер файла превышает 3 МБ.'})
@@ -110,11 +82,13 @@ def complete_appointment(request, appointment_id):
         else:
             medical_record.save()
 
+        try:
+            chat_id = appointment.patient.telegramuser.chat_id
+            async_to_sync(send_notification)(chat_id, f'Ваш приём завершён и исследование доступно к просмотру. Ссылка на медкарту: https://5gr4vbqg-8000.euw.devtunnels.ms/patient/mymedicalcard/')
+        except User.telegramuser.RelatedObjectDoesNotExist:
+            pass
+
         appointment.delete() # ! ИГРУШКА ДЬЯВОЛА
-
-        chat_id = appointment.patient.telegramuser.chat_id
-        async_to_sync(send_notification)(chat_id, f'Ваш приём завершён и исследование доступно к просмотру. Ссылка на медкарту: http://127.0.0.1:8000/patient/mymedicalcard/')
-
         return JsonResponse({'status': 'success'})
     return JsonResponse({'status': 'failed', 'error': 'Invalid request method'})
 
