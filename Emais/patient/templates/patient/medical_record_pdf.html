@@ -22,7 +22,7 @@
         <p>{{ record.date_completed }}</p>
         {% if image_url %}
             <h3>Изображение</h3>
-            <img src="{{ image_url }}" alt="Medical Record Image"/>
+            <img src="file://{{ image_url }}" alt="Medical Record Image"/>
         {% endif %}
     </div>
 </body>
