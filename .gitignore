@@ -1,6 +1,6 @@
 sh.sh
 venv
 **/__pycache__/
-#Emais/testapp
 node_modules
+Emais/gunicorn_start
 Emais/sensetiv.py

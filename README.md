@@ -11,10 +11,21 @@ Google диск:
 
 ---
 
-## Дальнейшие пути развития
+## Установка
 
-Перенос приложения в контейнер
+**YOUR_TG_BOT_TOKEN - ваш токен бота**
 
+
+**Запуск:**
+
+```
+git clone https://github.com/Macudsc/emais_prct2024.git
+cd emais_prct2024
+echo "tokenn='YOUR_TG_BOT_TOKEN'" >> Emais/sensetiv.py
+docker-compose up --build
+```
+
+**Остановка:** `docker-compose down`
 
 ## Бизнес-процессы
 
@@ -47,10 +58,15 @@ Google диск:
 `pip install -r requirements.txt`
 
 `source venv/bin/activate`
+
 `cd Emais/`
+
 `npm run build`
+
 `python manage.py runserver`
+
 `python manage.py runtelegrambot`
 
 `python manage.py makemigrations`
+
 `python manage.py migrate`

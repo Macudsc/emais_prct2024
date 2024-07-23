@@ -25,4 +25,4 @@ def redirect_after_login(request):
     elif request.user.groups.filter(name='administrator').exists():
         return redirect('administrator:myinfo')
     else:
-        return redirect('core:home')  # на случай, если у пользователя нет группы
+        return redirect('home')  # на случай, если у пользователя нет группы

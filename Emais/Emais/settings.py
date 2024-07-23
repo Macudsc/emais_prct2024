@@ -31,7 +31,10 @@ DEBUG = True
 #DEBUG=False
 
 ALLOWED_HOSTS = [
-#  'localhost',
+    '*'
+    #'127.0.0.1',
+    #'0.0.0.0',
+    #'localhost',
 ]
 
 
@@ -57,6 +60,8 @@ INSTALLED_APPS = [
     'axes',
     #'django_telegram_bot',
     'sslserver',
+    #'create_superuser',
+    #'collectstatic',
 ]
 
 MIDDLEWARE = [
@@ -76,6 +81,7 @@ MIDDLEWARE = [
 AUTHENTICATION_BACKENDS = [ # ! ИГРУШКА ДЬЯВОЛА №2
     #'axes.backends.AxesBackend',
     'django.contrib.auth.backends.ModelBackend',
+    #'axes.backends.AxesStandaloneBackend', ###################################
 ]
 
 AXES_FAILURE_LIMIT = 3  # Количество попыток
@@ -115,32 +121,66 @@ WSGI_APPLICATION = "Emais.wsgi.application"
 #        "NAME": BASE_DIR / "db.sqlite3",
 #    }
 #}
+#DATABASES = {
+#    'default': {
+#        'ENGINE': 'django.db.backends.postgresql',
+#        'NAME': 'emais_db',
+#        'USER': 'postgres',
+#        'PASSWORD': '7777',
+#        'HOST': 'localhost',
+#        'PORT': '5432',
+#    },
+#    'mongo': {
+#        'ENGINE': 'djongo',
+#        'NAME': 'emais_db_mon',
+#        'ENFORCE_SCHEMA': False,
+#        'CLIENT': {
+#            'host': 'localhost',
+#            'port': 27017
+#        }
+#    }
+#}
+## MongoDB
+#MONGO_DB = {
+#    'db': 'emais_db_mon',
+#    'host': 'localhost',
+#    'port': 27017
+#}
+
+# DOCKER DATABASES and MONGO_DB
+# PostgreSQL
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'emais_db',
-        'USER': 'postgres',
-        'PASSWORD': '7777',
-        'HOST': 'localhost',
-        'PORT': '5432',
+        'NAME': os.environ.get('POSTGRES_DB', 'emais_db'),  
+        'USER': os.environ.get('POSTGRES_USER', 'postgres'),  
+        'PASSWORD': os.environ.get('POSTGRES_PASSWORD', '7777'),  
+        'HOST': os.environ.get('POSTGRES_HOST', 'localhost'),  
+        'PORT': os.environ.get('POSTGRES_PORT', '5432'),  
     },
     'mongo': {
         'ENGINE': 'djongo',
-        'NAME': 'emais_db_mon',
+        'NAME': os.environ.get('MONGO_DB', 'emais_db_mon'),  
         'ENFORCE_SCHEMA': False,
         'CLIENT': {
-            'host': 'localhost',
-            'port': 27017
+            'host': os.environ.get('MONGO_HOST', 'localhost'),  
+            'port': int(os.environ.get('MONGO_PORT', 27017)),  
         }
     }
 }
-
 # MongoDB
 MONGO_DB = {
-    'db': 'emais_db_mon',
-    'host': 'localhost',
-    'port': 27017
+    'db': os.environ.get('MONGO_DB', 'emais_db_mon'),  
+    'host': os.environ.get('MONGO_HOST', 'localhost'),  
+    'port': int(os.environ.get('MONGO_PORT', 27017))  
 }
+
+
+# Default primary key field type
+# https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
+
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -190,10 +230,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'core/static/')
 #    # Другие директории, если необходимо
 #]
 
-# Default primary key field type
-# https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
-DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 MEDIA_ROOT = BASE_DIR / 'media'
 MEDIA_URL = '/media/'

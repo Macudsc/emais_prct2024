@@ -10,10 +10,6 @@ from bson import ObjectId
 from pymongo import MongoClient
 import pymongo
 from django.conf import settings
-#from django.db import models
-#from django.contrib.auth.models import User
-#from doctor.models import DoctorProfile
-#from patient.models import Appointment
 import gridfs
 
 from patient.models import MedicalRecord

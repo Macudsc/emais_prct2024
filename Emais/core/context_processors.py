@@ -5,7 +5,9 @@ def user_profile_url(request):
         return {}
 
     profile_url = ''
-    if request.user.groups.filter(name='patient').exists():
+    if request.user.is_superuser:
+        profile_url = reverse('admin:index')
+    elif request.user.groups.filter(name='patient').exists():
         profile_url = reverse('patient:myinfo')
     elif request.user.groups.filter(name='doctor').exists():
         profile_url = reverse('doctor:myinfo')
