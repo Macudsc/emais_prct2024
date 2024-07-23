@@ -2,5 +2,4 @@ sh.sh
 venv
 **/__pycache__/
 node_modules
-Emais/gunicorn_start
 Emais/sensetiv.py
