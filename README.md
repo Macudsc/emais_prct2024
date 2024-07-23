@@ -24,6 +24,7 @@ cd emais_prct2024
 echo "tokenn='YOUR_TG_BOT_TOKEN'" >> Emais/sensetiv.py
 docker-compose up --build
 ```
+Откройте в браузере адрес 0.0.0.0:8000
 
 **Остановка:** `docker-compose down`
 
