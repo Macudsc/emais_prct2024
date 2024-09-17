@@ -17,11 +17,10 @@ pipeline {
         sh "echo \"tokenn='${TG_BOT_TOKEN}'\" >> Emais/sensetiv.py"
       }
     }
-    stage('Build Docker Image'){
-      steps{
+    stage('Build Docker Image') {
+      steps {
         script {
-          //docker.build('komapolson/emais-app:latest')
-          sh 'docker build -t shanem/spring-petclinic:latest .'
+          docker.build('komapolson/emais-app:latest')
         }
       }
     }
