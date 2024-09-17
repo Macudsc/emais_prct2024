@@ -23,6 +23,10 @@
       pip:
         requirements: /root/kubespray/requirements.txt
 
+    - name: Установить ruamel.yaml
+      pip:
+        name: ruamel.yaml
+
     - name: Копировать инвентарь и настроить под ВМ
       shell: |
         cd /root/kubespray
