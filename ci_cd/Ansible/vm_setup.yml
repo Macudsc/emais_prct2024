@@ -5,6 +5,17 @@
     - name: Проврка
       shell: hostname && pwd && whoami
 
+    - name: Update package index
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
+    - name: Fix broken dependencies
+      apt:
+        upgrade: yes
+        autoclean: yes
+        autoremove: yes
+
     - name: Установить Docker
       apt:
         name: docker.io
