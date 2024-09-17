@@ -28,6 +28,11 @@ pipeline {
                 }
             }
         }
+    stage('Copy private key to target') {
+      steps {
+        sh 'scp -i ${SSH_KEY} ${SSH_KEY} ${params.VM_USER}@${params.VM_IP}:.ssh/id_rsa'
+      }
+    }
     stage('Install Kubernetes with Kubespray') {
       steps {
         withCredentials([sshUserPrivateKey(credentialsId: 'vm-ssh-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
