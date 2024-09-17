@@ -5,7 +5,6 @@ pipeline {
     DOCKER_CREDS = 'dockerhub-credentials-id'
     TG_BOT_TOKEN = credentials('telegram-bot-token')
     KUBECONFIG_FILE = '/tmp/kubeconfig' // Путь к kubeconfig на Jenkins
-    CURRENT_IP='params.VM_IP'
   }
   stages {
     stage('Checkout github') {
@@ -21,20 +20,22 @@ pipeline {
     stage('Deploy VM Setup') {
       steps {
         withCredentials([sshUserPrivateKey(credentialsId: 'vm-ssh-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
-          // Скопировать ключ на виртуальную машину
-          sh """
-            mkdir -p /tmp/.ssh
-            cp ${SSH_KEY} /tmp/.ssh/id_rsa
-            chmod 600 /tmp/.ssh/id_rsa
-            scp -i /tmp/.ssh/id_rsa ${SSH_KEY} ${SSH_USER}@${params.VM_IP}:/home/${SSH_USER}/.ssh/id_rsa
-            ssh -i /tmp/.ssh/id_rsa ${SSH_USER}@${params.VM_IP} 'mkdir -p /home/${SSH_USER}/.ssh && chmod 700 /home/${SSH_USER}/.ssh'
-            ssh -i /tmp/.ssh/id_rsa ${SSH_USER}@${params.VM_IP} 'chmod 600 /home/${SSH_USER}/.ssh/id_rsa'
-          """
-          ansiblePlaybook(
-            playbook: 'ci_cd/Ansible/vm_setup.yml',
-            inventory: "${params.VM_IP},",
-            extras: "-e ansible_user=${SSH_USER} -e ansible_host=${params.VM_IP} -e ansible_ssh_private_key_file=${SSH_KEY}"
-          )
+          script {
+            // Скопировать ключ на виртуальную машину
+            sh """
+              mkdir -p /tmp/.ssh
+              cp ${SSH_KEY} /tmp/.ssh/id_rsa
+              chmod 600 /tmp/.ssh/id_rsa
+              ssh -i /tmp/.ssh/id_rsa ${SSH_USER}@${params.VM_IP} 'mkdir -p /home/root/.ssh && chmod 700 /home/root/.ssh'
+              scp -i /tmp/.ssh/id_rsa ${SSH_KEY} ${SSH_USER}@${params.VM_IP}:/home/root/.ssh/id_rsa
+              ssh -i /tmp/.ssh/id_rsa ${SSH_USER}@${params.VM_IP} 'chmod 600 /home/root/.ssh/id_rsa'
+            """
+            ansiblePlaybook(
+              playbook: 'ci_cd/Ansible/vm_setup.yml',
+              inventory: "${params.VM_IP},",
+              extras: "-e ansible_user=${SSH_USER} -e ansible_host=${params.VM_IP} -e ansible_ssh_private_key_file=${SSH_KEY}"
+            )
+          }
         }
       }
     }
@@ -51,6 +52,7 @@ pipeline {
         }
       }
     }
+
 
     stage('Deploy to K8s') {
       steps {
