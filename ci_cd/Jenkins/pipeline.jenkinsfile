@@ -13,14 +13,14 @@ pipeline {
     }
     stage('Prepare tg bot token'){
       steps {
-        sh "echo 'token preparing!'"
         sh "echo \"tokenn='${TG_BOT_TOKEN}'\" >> Emais/sensetiv.py"
       }
     }
     stage('Build Docker Image PIPELINE') {
       steps {
         script {
-          docker.build('komapolson/emais-app:latest')
+          sh "docker build -t komapolson/emais-app:latest ."
+          //docker.build('komapolson/emais-app:latest')
         }
       }
     }
