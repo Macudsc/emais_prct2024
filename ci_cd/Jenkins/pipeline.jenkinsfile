@@ -18,13 +18,17 @@ pipeline {
       }
     }
     stage('Build Docker Image'){
-      steps {
-        sh "echo 'SKIPPING. IMAGE FROM DOCKER HUB'"
+      script {
+          docker.build('komapolson/emais-app:latest')
       }
     }
     stage('Push Docker image'){
       steps {
-        sh "echo 'SKIPPING. IMAGE FROM DOCKER HUB'"
+        script {
+            withDockerRegistry(credentialsId: DOCKER_CREDS) {
+                docker.image('komapolson/emais-app:latest').push('latest')
+            }
+        }
       }
     }
     //stage('Install kubectl') {
