@@ -1,0 +1,15 @@
+---
+- hosts: all
+  become: true
+  tasks:
+    - name: Установить Docker
+      apt:
+        name: docker.io
+        state: present
+        update_cache: yes
+
+    - name: Убедиться, что Docker включен
+      systemd:
+        name: docker
+        enabled: yes
+        state: started

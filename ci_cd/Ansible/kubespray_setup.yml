@@ -1,0 +1,31 @@
+---
+- hosts: all
+  become: true
+  tasks:
+    - name: Клонировать репозиторий Kubespray
+      git:
+        repo: 'https://github.com/kubernetes-sigs/kubespray.git'
+        dest: /root/kubespray
+
+    - name: Установить зависимости для Kubespray
+      apt:
+        name: "{{ item }}"
+        state: present
+        update_cache: yes
+      with_items:
+        - python3-pip
+        - python3-setuptools
+        - python3-venv
+        - python3-wheel
+
+    - name: Установить зависимости pip
+      pip:
+        requirements: /root/kubespray/requirements.txt
+
+    - name: Запустить настройку кластера Kubernetes
+      shell: |
+        cd /root/kubespray
+        cp -rfp inventory/sample inventory/mycluster
+        ansible-playbook -i inventory/mycluster/hosts.yml --become --become-user=root cluster.yml
+      args:
+        chdir: /root/kubespray

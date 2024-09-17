@@ -1,0 +1,80 @@
+pipeline {
+  agent any
+  environment {
+    DOCKER_CREDS='dockerhub-credentials-id'
+    K8S_CREDS='kubeconfig'
+    TG_BOT_TOKEN=credentials('telegram-bot-token')
+  }
+  stages {
+    stage('Checkout github'){
+      steps {
+        git branch: 'dev', url: 'https://github.com/Macudsc/emais_prct2024.git'
+      }
+    }
+    stage('Prepare tg bot token'){
+      steps {
+        sh "echo \"tokenn='${TG_BOT_TOKEN}'\" >> Emais/sensetiv.py"
+      }
+    }
+    stage('Build Docker Image PIPELINE') {
+      steps {
+        script {
+          //sh "docker version"
+          //sh "docker build -t komapolson/emais-app:latest ."
+          docker.build('komapolson/emais-app:latest')
+        }
+      }
+    }
+    stage('Push Docker Image') {
+        steps {
+            script {
+                withDockerRegistry([credentialsId: 'dockerhub-credentials-id', url: 'https://index.docker.io/v1/']) {
+                    docker.image('komapolson/emais-app:latest').push('latest')
+                }
+            }
+        }
+    }
+    //stage('Deploy to K8s'){
+    //  steps {
+    //    script {
+    //      withKubeConfig([credentialsId: 'kubeconfig']){
+    //        //sh 'curl -LO "https://storage.googleapis.com/kubernetes-release/release/v1.20.5/bin/linux/amd64/kubectl"'  
+    //        //sh 'chmod u+x ./kubectl'  
+    //        //sh 'mv ./kubectl /tmp/kubectl'
+    //        //sh 'export PATH=$PATH:/tmp'
+    //        sh 'curl -LO "https://storage.googleapis.com/kubernetes-release/release/v1.20.5/bin/linux/amd64/kubectl"'  
+    //        sh 'chmod u+x ./kubectl'  
+    //        sh './kubectl apply -f ci_cd/K8s/namespace.yml'
+    //        sh './kubectl apply -f ci_cd/K8s/postgres-pvc.yml'
+    //        sh './kubectl apply -f ci_cd/K8s/postgres-deployment.yml'
+    //        sh './kubectl apply -f ci_cd/K8s/mongo-pvc.yml'
+    //        sh './kubectl apply -f ci_cd/K8s/mongo-deployment.yml'
+    //        sh './kubectl apply -f ci_cd/K8s/app-deployment.yml'
+    //      }
+    //    }
+    //  }
+    //}
+    //stage('Setup VM with Ansible'){
+    //  steps {
+        
+    //  }
+    //}
+    //stage('create kubespray cluster'){
+    //  steps {
+        
+    //  }
+    //}
+    //stage('Docker image remove') {
+    //  steps {
+    //    script {
+    //      sh "docker rmi komapolson/emais-app:latest || true"
+    //    }
+    //  }
+    //}
+  }
+  post {
+    always {
+      cleanWs()
+    }
+  }
+}
