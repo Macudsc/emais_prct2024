@@ -32,7 +32,7 @@ pipeline {
     stage('Deploy to K8s'){
       steps {
         script {
-          withKubeConfig(credentialsId: K8S_CREDS){
+          withKubeConfig([credentialsId: 'kubeconfig']){
             sh 'kubectl apply -f ci_cd/K8s/namespace.yml'
             sh 'kubectl apply -f ci_cd/K8s/postgres-pvc.yml'
             sh 'kubectl apply -f ci_cd/K8s/postgres-deployment.yml'
