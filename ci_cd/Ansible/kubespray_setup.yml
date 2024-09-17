@@ -38,7 +38,7 @@
     - name: Запустить настройку кластера Kubernetes
       shell: |
         cd /root/kubespray
-        ansible-playbook -i inventory/mycluster/hosts.yml --become --become-user=root cluster.yml
+        ansible-playbook -i inventory/mycluster/hosts.yml --private-key ~/.ssh/id_rsa --become --become-user=root cluster.yml
       args:
         chdir: /root/kubespray
 
