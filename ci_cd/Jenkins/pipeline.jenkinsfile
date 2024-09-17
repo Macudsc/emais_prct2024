@@ -33,33 +33,40 @@ pipeline {
     //}
     stage('Setup VM with Ansible') {
       steps {
-        withCredentials([sshUserPrivateKey(credentialsId: 'vm-ssh-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER'), string(credentialsId: 'vm_ip', variable: 'VM_IP')]) {
+        withCredentials([
+          sshUserPrivateKey(credentialsId: 'vm-ssh-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER'),
+          string(credentialsId: 'vm_ip', variable: 'VM_IP')
+        ]) {
           script {
             sh """
               ssh-keyscan -H ${VM_IP} >> ~/.ssh/known_hosts
             """
             ansiblePlaybook(
               playbook: 'ci_cd/Ansible/vm_setup.yml',
-              inventory: "localhost,",
+              inventory: "${VM_IP},",
               extras: "-e ansible_user=${SSH_USER} -e ansible_host=${VM_IP} -e ansible_ssh_private_key_file=${SSH_KEY}"
             )
           }
         }
       }
     }
+
     stage('Install Kubernetes with Kubespray') {
       steps {
-        withCredentials([sshUserPrivateKey(credentialsId: 'vm-ssh-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER'), string(credentialsId: 'vm_ip', variable: 'VM_IP')]) {
+        withCredentials([
+          sshUserPrivateKey(credentialsId: 'vm-ssh-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER'),
+          string(credentialsId: 'vm_ip', variable: 'VM_IP')
+        ]) {
           script {
             ansiblePlaybook(
               playbook: 'ci_cd/Ansible/kubespray_setup.yml',
-              inventory: "localhost,",
+              inventory: "${VM_IP},",
               extras: "-e ansible_user=${SSH_USER} -e ansible_host=${VM_IP} -e ansible_ssh_private_key_file=${SSH_KEY}"
             )
           }
         }
       }
-    }
+}
 
     stage('Deploy to K8s'){
       steps {
