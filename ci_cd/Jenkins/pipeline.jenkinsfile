@@ -35,7 +35,7 @@ pipeline {
           withKubeConfig([credentialsId: 'kubeconfig']){
             sh 'curl -LO "https://storage.googleapis.com/kubernetes-release/release/v1.20.5/bin/linux/amd64/kubectl"'  
             sh 'chmod u+x ./kubectl'  
-            //sh './kubectl get pods -n dev'
+            sh 'mv ./kubectl /usr/local/bin/kubectl'
             sh 'kubectl apply -f ci_cd/K8s/namespace.yml'
             sh 'kubectl apply -f ci_cd/K8s/postgres-pvc.yml'
             sh 'kubectl apply -f ci_cd/K8s/postgres-deployment.yml'
