@@ -3,27 +3,72 @@
   become: true
   tasks:
     - name: Проврка
-      shell: hostname && pwd && whoami
+      shell: hostname && pwd && whoami && touch someneww.txt
 
-    - name: Update package index
+    - name: Обновить индекс пакетов
       apt:
         update_cache: yes
         cache_valid_time: 3600
 
-    - name: Fix broken dependencies
+    - name: Исправить проблемы с зависимостями
       apt:
         upgrade: yes
         autoclean: yes
         autoremove: yes
 
-    - name: Установить Docker
+    - name: Установить необходимые пакеты
       apt:
-        name: docker.io
+        name: 
+          - ca-certificates
+          - curl
         state: present
         update_cache: yes
+
+    - name: Создать каталог для ключей APT
+      file:
+        path: /etc/apt/keyrings
+        state: directory
+        mode: '0755'
+
+    - name: Добавить GPG-ключ Docker
+      get_url:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        dest: /etc/apt/keyrings/docker.asc
+        mode: '0644'
+
+    - name: Добавить репозиторий Docker в источники APT
+      lineinfile:
+        path: /etc/apt/sources.list.d/docker.list
+        line: "deb [arch={{ ansible_architecture }} signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu {{ ansible_lsb.codename }} stable"
+        create: yes
+
+    - name: Обновить индекс пакетов после добавления репозитория Docker
+      apt:
+        update_cache: yes
+
+    - name: Установить Docker
+      apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-buildx-plugin
+          - docker-compose-plugin
+        state: present
 
     - name: Убедиться, что Docker включен
       systemd:
         name: docker
         enabled: yes
         state: started
+
+    - name: Создать группу Docker
+      group:
+        name: docker
+        state: present
+
+    - name: Добавить пользователя в группу Docker
+      user:
+        name: "{{ ansible_user }}"
+        groups: docker
+        append: yes
