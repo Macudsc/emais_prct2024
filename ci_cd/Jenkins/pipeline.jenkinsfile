@@ -17,7 +17,7 @@ pipeline {
         sh "echo \"tokenn='${TG_BOT_TOKEN}'\" >> Emais/sensetiv.py"
       }
     }
-    stage('Build Docker Image') {
+    stage('Build Docker Image PIPELINE') {
       steps {
         script {
           docker.build('komapolson/emais-app:latest')
