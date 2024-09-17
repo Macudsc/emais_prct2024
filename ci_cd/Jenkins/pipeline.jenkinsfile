@@ -2,11 +2,7 @@ pipeline {
   agent any
   environment {
     DOCKER_CREDS = 'dockerhub-credentials-id'
-    //K8S_CREDS = 'kubeconfig'
     TG_BOT_TOKEN = credentials('telegram-bot-token')
-    VM_SSH_KEY = credentials('vm-ssh-key')
-    VM_IP = credentials('vm_ip')
-    VM_USER = credentials('vm_user')
   }
   stages {
     stage('Checkout github') {
@@ -37,23 +33,30 @@ pipeline {
     }
     stage('Setup VM with Ansible') {
       steps {
-        script {
-          ansiblePlaybook(
-            playbook: 'ci_cd/Ansible/vm_setup.yml',
-            inventory: "localhost,",
-            options: "-e ansible_user=${VM_USER} -e ansible_host=${VM_IP} -e ansible_ssh_private_key_file=${VM_SSH_KEY}"
-          )
+        withCredentials([sshUserPrivateKey(credentialsId: 'vm-ssh-key', keyFileVariable: 'SSH_KEY'), string(credentialsId: 'vm_ip', variable: 'VM_IP'), string(credentialsId: 'vm_user', variable: 'VM_USER')]) {
+          script {
+            sh """
+              ssh-keyscan -H ${VM_IP} >> ~/.ssh/known_hosts
+            """
+            ansiblePlaybook(
+              playbook: 'ci_cd/Ansible/vm_setup.yml',
+              inventory: "localhost,",
+              extras: "-e ansible_user=${VM_USER} -e ansible_host=${VM_IP} -e ansible_ssh_private_key_file=${SSH_KEY}"
+            )
+          }
         }
       }
     }
     stage('Install Kubernetes with Kubespray') {
       steps {
-        script {
-          ansiblePlaybook(
-            playbook: 'ci_cd/Ansible/kubespray_setup.yml',
-            inventory: "localhost,",
-            options: "-e ansible_user=${VM_USER} -e ansible_host=${VM_IP} -e ansible_ssh_private_key_file=${VM_SSH_KEY}"
-          )
+        withCredentials([sshUserPrivateKey(credentialsId: 'vm-ssh-key', keyFileVariable: 'SSH_KEY'), string(credentialsId: 'vm_ip', variable: 'VM_IP'), string(credentialsId: 'vm_user', variable: 'VM_USER')]) {
+          script {
+            ansiblePlaybook(
+              playbook: 'ci_cd/Ansible/kubespray_setup.yml',
+              inventory: "localhost,",
+              extras: "-e ansible_user=${VM_USER} -e ansible_host=${VM_IP} -e ansible_ssh_private_key_file=${SSH_KEY}"
+            )
+          }
         }
       }
     }
@@ -72,13 +75,13 @@ pipeline {
         }
       }
     }
-    stage('Docker image remove') {
-      steps {
-        script {
-          sh "docker rmi komapolson/emais-app:latest || true"
-        }
-      }
-    }
+    //stage('Docker image remove') {
+    //  steps {
+    //    script {
+    //      sh "docker rmi komapolson/emais-app:latest || true"
+    //    }
+    //  }
+    //}
   }
   post {
     always {
