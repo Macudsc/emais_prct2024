@@ -18,8 +18,10 @@ pipeline {
       }
     }
     stage('Build Docker Image'){
-      script {
+      steps{
+        script {
           docker.build('komapolson/emais-app:latest')
+        }
       }
     }
     stage('Push Docker image'){
