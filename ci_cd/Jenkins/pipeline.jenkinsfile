@@ -15,22 +15,22 @@ pipeline {
         sh "echo \"tokenn='${TG_BOT_TOKEN}'\" >> Emais/sensetiv.py"
       }
     }
-    stage('Build Docker Image PIPELINE') {
-      steps {
-        script {
-          docker.build('komapolson/emais-app:latest')
-        }
-      }
-    }
-    stage('Push Docker Image') {
-      steps {
-        script {
-          withDockerRegistry([credentialsId: DOCKER_CREDS, url: 'https://index.docker.io/v1/']) {
-            docker.image('komapolson/emais-app:latest').push('latest')
-          }
-        }
-      }
-    }
+    //stage('Build Docker Image PIPELINE') {
+    //  steps {
+    //    script {
+    //      docker.build('komapolson/emais-app:latest')
+    //    }
+    //  }
+    //}
+    //stage('Push Docker Image') {
+    //  steps {
+    //    script {
+    //      withDockerRegistry([credentialsId: DOCKER_CREDS, url: 'https://index.docker.io/v1/']) {
+    //        docker.image('komapolson/emais-app:latest').push('latest')
+    //      }
+    //    }
+    //  }
+    //}
     stage('Setup VM with Ansible') {
       steps {
         withCredentials([sshUserPrivateKey(credentialsId: 'vm-ssh-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER'), string(credentialsId: 'vm_ip', variable: 'VM_IP')]) {
