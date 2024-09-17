@@ -20,29 +20,19 @@ pipeline {
     stage('Build Docker Image'){
       steps{
         script {
-          docker.build('komapolson/emais-app:latest')
+          //docker.build('komapolson/emais-app:latest')
+          sh 'docker build -t shanem/spring-petclinic:latest .'
         }
       }
     }
-    stage('Push Docker Image') {
-        steps {
-            script {
-                withDockerRegistry([credentialsId: 'dockerhub-credentials-id', url: 'https://index.docker.io/v1/']) {
-                    docker.image('komapolson/emais-app:latest').push('latest')
-                }
-            }
-        }
-    }
-    //stage('Install kubectl') {
-    //  steps {
-    //      sh '''
-    //          curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.20.5/bin/linux/amd64/kubectl
-    //          chmod u+x ./kubectl
-    //          mv ./kubectl /tmp/kubectl
-    //          export PATH=$PATH:/tmp
-    //          kubectl version --client
-    //      '''
-    //  }
+    //stage('Push Docker Image') {
+    //    steps {
+    //        script {
+    //            withDockerRegistry([credentialsId: 'dockerhub-credentials-id', url: 'https://index.docker.io/v1/']) {
+    //                docker.image('komapolson/emais-app:latest').push('latest')
+    //            }
+    //        }
+    //    }
     //}
     stage('Deploy to K8s'){
       steps {
