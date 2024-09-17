@@ -3,6 +3,62 @@ pipeline {
   environment {
     DOCKER_CREDS = 'dockerhub-credentials-id'
     TG_BOT_TOKEN = credentials('telegram-bot-token')
+  }
+  stages {
+    stage('Checkout github') {
+      steps {
+        git branch: 'dev', url: 'https://github.com/Macudsc/emais_prct2024.git'
+      }
+    }
+    stage('Prepare tg bot token') {
+      steps {
+        sh "echo \"tokenn='${TG_BOT_TOKEN}'\" >> Emais/sensetiv.py"
+      }
+    }
+
+    stage('Setup VM with Ansible') {
+      steps {
+        withCredentials([
+          sshUserPrivateKey(credentialsId: 'vm-ssh-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER'),
+          string(credentialsId: 'vm_ip', variable: 'VM_IP')
+        ]) {
+          script {
+            sh """
+              ssh-keyscan -H ${VM_IP} >> ~/.ssh/known_hosts
+            """
+            ansiblePlaybook(
+              playbook: 'ci_cd/Ansible/vm_setup.yml',
+              inventory: "${VM_IP},",
+              extras: "-e ansible_user=${SSH_USER} -e ansible_host=${VM_IP} -e ansible_ssh_private_key_file=${SSH_KEY}"
+            )
+          }
+        }
+      }
+    }
+
+    stage('Install Kubernetes with Kubespray') {
+      steps {
+        withCredentials([
+          sshUserPrivateKey(credentialsId: 'vm-ssh-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER'),
+          string(credentialsId: 'vm_ip', variable: 'VM_IP')
+        ]) {
+          script {
+            ansiblePlaybook(
+              playbook: 'ci_cd/Ansible/kubespray_setup.yml',
+              inventory: "${VM_IP},",
+              extras: "-e ansible_user=${SSH_USER} -e ansible_host=${VM_IP} -e ansible_ssh_private_key_file=${SSH_KEY}"
+            )
+          }
+        }
+      }
+    }
+
+
+pipeline {
+  agent any
+  environment {
+    DOCKER_CREDS = 'dockerhub-credentials-id'
+    TG_BOT_TOKEN = credentials('telegram-bot-token')
     KUBECONFIG_FILE = '/tmp/kubeconfig' // Путь к kubeconfig на Jenkins
   }
   stages {
@@ -67,8 +123,11 @@ pipeline {
         }
       }
     }
+  }
+}
 
-            //stage('Build Docker Image PIPELINE') {
+
+    //stage('Build Docker Image PIPELINE') {
     //  steps {
     //    script {
     //      docker.build('komapolson/emais-app:latest')
@@ -85,6 +144,22 @@ pipeline {
     //  }
     //}
 
+    stage('Deploy to K8s'){
+      steps {
+        script {
+          withKubeConfig([credentialsId: 'kubeconfig']) {
+            sh 'curl -LO "https://storage.googleapis.com/kubernetes-release/release/v1.20.5/bin/linux/amd64/kubectl"'  
+            sh 'chmod u+x ./kubectl'  
+            sh './kubectl apply -f ci_cd/K8s/namespace.yml'
+            sh './kubectl apply -f ci_cd/K8s/postgres-pvc.yml'
+            sh './kubectl apply -f ci_cd/K8s/postgres-deployment.yml'
+            sh './kubectl apply -f ci_cd/K8s/mongo-pvc.yml'
+            sh './kubectl apply -f ci_cd/K8s/mongo-deployment.yml'
+            sh './kubectl apply -f ci_cd/K8s/app-deployment.yml'
+          }
+        }
+      }
+    }
     //stage('Docker image remove') {
     //  steps {
     //    script {

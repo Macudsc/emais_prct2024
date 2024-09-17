@@ -29,3 +29,9 @@
         ansible-playbook -i inventory/mycluster/hosts.yml --become --become-user=root cluster.yml
       args:
         chdir: /root/kubespray
+
+    - name: Скопировать kubeconfig на контроллер Jenkins
+      fetch:
+        src: /etc/kubernetes/admin.conf
+        dest: /tmp/kubeconfig
+        flat: yes
