@@ -1,0 +1,54 @@
+pipeline {
+  agent any
+  environment {
+    DOCKER_CREDS='dockerhub-credentials-id'
+    K8S_CREDS='kubeconfig'
+    TG_BOT_TOKEN=credentioals('telegram-bot-token')
+  }
+  stages {
+    stage('Checkout github'){
+      steps {
+        git 'https://github.com/Macudsc/emais_prct2024.git'
+      }
+    }
+    stage('Prepare tg bot token'){
+      steps {
+        sh "echo 'token preparing!'"
+        sh "echo \"tokenn='${TG_BOT_TOKEN}'\" >> Emais/sensetiv.py"
+      }
+    }
+    stage('Build Docker Image'){
+      steps {
+        sh "building image'"
+        sh 'sleep 1'
+      }
+    }
+    stage('Push Docker image'){
+      steps {
+        sh "echo 'pushing to Docker!'"
+        sh 'sleep 1'
+      }
+    }
+    stage('Deploy to K8s'){
+      steps {
+        sh "echo 'deploying!'"
+        sh 'sleep 1'
+      }
+    }
+    //stage('Setup VM with Ansible'){
+    //  steps {
+        
+    //  }
+    //}
+    //stage('create kubespray cluster'){
+    //  steps {
+        
+    //  }
+    //}
+  }
+  post {
+    always {
+      cleanWs()
+    }
+  }
+}

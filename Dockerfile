@@ -1,7 +1,8 @@
 FROM python:3.10-slim
 
 # Установка зависимостей
-RUN apt-get update && apt-get install -y build-essential libpq-dev libpango1.0-0 libcairo2 libffi-dev libpangoft2-1.0-0 nodejs npm tree
+RUN apt-get update && apt-get install -y build-essential libpq-dev libpango1.0-0 libcairo2 libffi-dev libpangoft2-1.0-0 
+#nodejs npm tree
 
 # Установить рабочий каталог
 WORKDIR /app
@@ -19,7 +20,7 @@ COPY . .
 WORKDIR /app/Emais
 
 # Установить зависимости npm и запустить сборку
-RUN npm install && npm run build
+#RUN npm install && npm run build
 
 # Переменная окружения для Django
 ENV DJANGO_SETTINGS_MODULE=Emais.settings

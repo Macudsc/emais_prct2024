@@ -1,18 +1,17 @@
 version: '3.8'
 
 services:
-  app:
-    #build: .
-    image: komapolson/emais-app:latest
+  web:
+    build: .
     command: >
       bash -c "python manage.py makemigrations &&
               python manage.py migrate &&
               python manage.py create_groups &&
               python create_superuser.py &&
               python create_users.py &&
-              ./services_combined.sh"
-    #volumes:
-    #  - .:/app
+              python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - .:/app
     ports:
       - "8000:8000"
     depends_on:
@@ -31,7 +30,24 @@ services:
       - DJANGO_SUPERUSER_USERNAME=admin
       - DJANGO_SUPERUSER_EMAIL=admin@example.com
       - DJANGO_SUPERUSER_PASSWORD=adminpassword
-
+  bot:
+    build: .
+    command: >
+      bash -c "python manage.py runtelegrambot"
+    volumes:
+      - .:/app
+    depends_on:
+      - web
+    environment:
+      - DJANGO_SETTINGS_MODULE=Emais.settings
+      - POSTGRES_DB=emais_db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=7777
+      - POSTGRES_HOST=db
+      - POSTGRES_PORT=5432
+      - MONGO_DB=emais_db_mon
+      - MONGO_HOST=mongo
+      - MONGO_PORT=27017
   db:
     image: postgres:13
     environment:
@@ -42,7 +58,6 @@ services:
       - postgres_data:/var/lib/postgresql/data
     ports:
       - "5433:5432"
-
   mongo:
     image: mongo:4.4
     volumes:

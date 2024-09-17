@@ -1,0 +1,62 @@
+# Приложение
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ema-app
+  namespace: emais-ns
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ema-app
+  template:
+    metadata:
+      labels:
+        app: ema-app
+    spec:
+      containers:
+      - name: ema-app
+        image: komapolson/emais-app:latest
+        ports:
+        - containerPort: 8000
+        env:
+        - name: DJANGO_SETTINGS_MODULE
+          value: "Emais.settings"
+        - name: POSTGRES_DB
+          value: "emais_db"
+        - name: POSTGRES_USER
+          value: "postgres"
+        - name: POSTGRES_PASSWORD
+          value: "7777"
+        - name: POSTGRES_HOST # ТУТ БЫЛО db
+          value: "postgres-service"
+        - name: POSTGRES_PORT
+          value: "5432"
+        - name: MONGO_DB
+          value: "emais_db_mon"
+        - name: MONGO_HOST
+          value: "mongo-service" # тут было mongo
+        - name: MONGO_PORT
+          value: "27017"
+        command: ["/bin/bash", "-c", "python manage.py makemigrations && python manage.py migrate && python manage.py create_groups && python create_superuser.py && python create_users.py && ./services_combined.sh"]
+      #  volumeMounts:
+      #  - name: app-volume
+      #    mountPath: /app
+      #volumes:
+      #- name: app-volume
+      #  emptyDir: {}
+---
+# Для интернета Сервис
+apiVersion: v1
+kind: Service
+metadata:
+  name: ema-app-service
+  namespace: emais-ns
+spec:
+  type: NodePort
+  selector:
+    app: ema-app
+  ports:
+    - port: 8000
+      targetPort: 8000
+      nodePort: 30001
