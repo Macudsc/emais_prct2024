@@ -19,8 +19,8 @@ pipeline {
     stage('Build Docker Image PIPELINE') {
       steps {
         script {
-          sh "docker build -t komapolson/emais-app:latest ."
-          //docker.build('komapolson/emais-app:latest')
+          //sh "docker build -t komapolson/emais-app:latest ."
+          docker.build('komapolson/emais-app:latest')
         }
       }
     }
