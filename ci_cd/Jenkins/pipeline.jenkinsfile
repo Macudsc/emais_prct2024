@@ -21,9 +21,14 @@ pipeline {
     stage('Deploy VM Setup') {
       steps {
         withCredentials([sshUserPrivateKey(credentialsId: 'vm-ssh-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
+          // Скопировать ключ на виртуальную машину
           sh """
-            scp -i ${SSH_KEY} ${SSH_KEY} ${SSH_USER}@${params.VM_IP}:/home/${SSH_USER}/.ssh/id_rsa
-            ssh -i ${SSH_KEY} ${SSH_USER}@${params.VM_IP} 'chmod 600 /home/${SSH_USER}/.ssh/id_rsa'
+            mkdir -p /tmp/.ssh
+            cp ${SSH_KEY} /tmp/.ssh/id_rsa
+            chmod 600 /tmp/.ssh/id_rsa
+            scp -i /tmp/.ssh/id_rsa ${SSH_KEY} ${SSH_USER}@${params.VM_IP}:/home/${SSH_USER}/.ssh/id_rsa
+            ssh -i /tmp/.ssh/id_rsa ${SSH_USER}@${params.VM_IP} 'mkdir -p /home/${SSH_USER}/.ssh && chmod 700 /home/${SSH_USER}/.ssh'
+            ssh -i /tmp/.ssh/id_rsa ${SSH_USER}@${params.VM_IP} 'chmod 600 /home/${SSH_USER}/.ssh/id_rsa'
           """
           ansiblePlaybook(
             playbook: 'ci_cd/Ansible/vm_setup.yml',
