@@ -20,23 +20,32 @@ pipeline {
     stage('Build Docker Image'){
       steps {
         sh "echo 'SKIPPING. IMAGE FROM DOCKER HUB'"
-        sh 'sleep 1'
       }
     }
     stage('Push Docker image'){
       steps {
         sh "echo 'SKIPPING. IMAGE FROM DOCKER HUB'"
-        sh 'sleep 1'
       }
+    }
+    stage('Install kubectl') {
+    steps {
+        sh '''
+            curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.20.5/bin/linux/amd64/kubectl
+            chmod u+x ./kubectl
+            mv ./kubectl /tmp/kubectl
+            export PATH=$PATH:/tmp
+            kubectl version --client
+        '''
+        }
     }
     stage('Deploy to K8s'){
       steps {
         script {
           withKubeConfig([credentialsId: 'kubeconfig']){
-            sh 'curl -LO "https://storage.googleapis.com/kubernetes-release/release/v1.20.5/bin/linux/amd64/kubectl"'  
-            sh 'chmod u+x ./kubectl'  
-            sh 'mv ./kubectl /tmp/kubectl'
-            sh 'export PATH=$PATH:/tmp'
+            //sh 'curl -LO "https://storage.googleapis.com/kubernetes-release/release/v1.20.5/bin/linux/amd64/kubectl"'  
+            //sh 'chmod u+x ./kubectl'  
+            //sh 'mv ./kubectl /tmp/kubectl'
+            //sh 'export PATH=$PATH:/tmp'
             sh 'kubectl apply -f ci_cd/K8s/namespace.yml'
             sh 'kubectl apply -f ci_cd/K8s/postgres-pvc.yml'
             sh 'kubectl apply -f ci_cd/K8s/postgres-deployment.yml'
