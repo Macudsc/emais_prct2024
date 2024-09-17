@@ -24,14 +24,14 @@ pipeline {
         }
       }
     }
-    stage('Push Docker image'){
-      steps {
-        script {
-            withDockerRegistry(credentialsId: DOCKER_CREDS) {
-                docker.image('komapolson/emais-app:latest').push('latest')
+    stage('Push Docker Image') {
+        steps {
+            script {
+                withDockerRegistry([credentialsId: 'dockerhub-credentials-id', url: 'https://index.docker.io/v1/']) {
+                    docker.image('komapolson/emais-app:latest').push('latest')
+                }
             }
         }
-      }
     }
     //stage('Install kubectl') {
     //  steps {
