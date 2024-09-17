@@ -19,20 +19,28 @@ pipeline {
     }
     stage('Build Docker Image'){
       steps {
-        sh "echo 'building image'"
+        sh "echo 'SKIPPING. IMAGE FROM DOCKER HUB'"
         sh 'sleep 1'
       }
     }
     stage('Push Docker image'){
       steps {
-        sh "echo 'pushing to Docker!'"
+        sh "echo 'SKIPPING. IMAGE FROM DOCKER HUB'"
         sh 'sleep 1'
       }
     }
     stage('Deploy to K8s'){
       steps {
-        sh "echo 'deploying!'"
-        sh 'sleep 1'
+        script {
+          withKubeConfig(credentialsId: K8S_CREDS){
+            sh 'kubectl apply -f ci_cd/K8s/namespace.yml'
+            sh 'kubectl apply -f ci_cd/K8s/postgres-pvc.yml'
+            sh 'kubectl apply -f ci_cd/K8s/postgres-deployment.yml'
+            sh 'kubectl apply -f ci_cd/K8s/mongo-pvc.yml'
+            sh 'kubectl apply -f ci_cd/K8s/mongo-deployment.yml'
+            sh 'kubectl apply -f ci_cd/K8s/app-deployment.yml'
+          }
+        }
       }
     }
     //stage('Setup VM with Ansible'){
