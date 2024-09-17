@@ -2,6 +2,9 @@
 - hosts: all
   become: true
   tasks:
+    - name: Проврка
+      shell: hostname && pwd && whoami
+
     - name: Установить Docker
       apt:
         name: docker.io
