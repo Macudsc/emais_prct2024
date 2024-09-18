@@ -117,6 +117,9 @@ pipeline {
                     }
                 } else {
                     withEnv(["PATH+YC=/home/jenkins/yandex-cloud/bin"]) {
+                        sh """
+                        echo "$(yc compute instance list --format json | grep -A 1 'one_to_one_nat')"
+                        """
                         // Получаем IP адреса через jq для корректного парсинга
                         def masterIp = sh(script: 'yc compute instance list --format json | jq -r \'.[] | select(.name == "k8s-master-0") | .network_interfaces[].primary_v4_address.one_to_one_nat.address\'', returnStdout: true).trim()
                         def workerIp = sh(script: 'yc compute instance list --format json | jq -r \'.[] | select(.name == "k8s-worker-0") | .network_interfaces[].primary_v4_address.one_to_one_nat.address\'', returnStdout: true).trim()
