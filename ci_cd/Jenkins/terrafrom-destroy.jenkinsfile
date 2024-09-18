@@ -1,7 +1,6 @@
 pipeline{
     agent any
     environment {
-      TG_BOT_TOKEN = credentials('telegram-bot-token')
       CLOUD_ID = credentials('yandex-cloud-id') // Jenkins credential для cloud_id
       FOLDER_ID = credentials('yandex-folder-id') // Jenkins credential для folder_id
       YC_TOKEN = credentials('yandex-token') // Jenkins credential для токена Яндекса
@@ -10,11 +9,6 @@ pipeline{
         stage('Checkout github') {
           steps {
             git branch: 'dev', url: 'https://github.com/Macudsc/emais_prct2024.git'
-          }
-        }
-        stage('Prepare tg bot token') {
-          steps {
-            sh "echo \"tokenn='${TG_BOT_TOKEN}'\" >> Emais/sensetiv.py"
           }
         }
         stage('Generate creds.tfvars') {
@@ -32,7 +26,9 @@ pipeline{
         stage('Destroy terraform infra') {
           steps {
             script {
-              sh 'terraform destroy -var-file=creds.tfvars -var-file=vars.tfvars -auto-approve'
+              dir('ci_cd/Terraform') {
+                sh 'terraform destroy -var-file=creds.tfvars -var-file=vars.tfvars -auto-approve'
+              }
             }
           }
         }
