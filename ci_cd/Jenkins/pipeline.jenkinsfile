@@ -47,6 +47,11 @@ pipeline {
             }
         }
     }
+    //stage('Install jq') {
+    //    steps {
+    //        sh 'apt-get update && apt-get install -y jq'
+    //    }
+    //}
     stage('Install and Use yc CLI') {
         steps {
             sh '''
@@ -61,22 +66,23 @@ pipeline {
     }
     stage('Check Existing Infrastructure') {
         steps {
-            script {
-                def networks = sh(script: 'export PATH=$PATH:/home/jenkins/yandex-cloud/bin && yc vpc network list --format json', returnStdout: true).trim()
-                def subnets = sh(script: 'export PATH=$PATH:/home/jenkins/yandex-cloud/bin && yc vpc subnet list --format json', returnStdout: true).trim()
-                def addresses = sh(script: 'export PATH=$PATH:/home/jenkins/yandex-cloud/bin && yc vpc address list --format json', returnStdout: true).trim()
+            withEnv(["PATH+YC=/home/jenkins/yandex-cloud/bin"]) {
+                script {
+                    def networks = sh(script: 'yc vpc network list --format json', returnStdout: true).trim()
+                    def subnets = sh(script: 'yc vpc subnet list --format json', returnStdout: true).trim()
+                    def addresses = sh(script: 'yc vpc address list --format json', returnStdout: true).trim()
 
-                if (networks || subnets || addresses) {
-                    echo 'Existing infrastructure found. Skipping creation steps...'
-                    env.INFRA_EXISTS = 'true'
-                } else {
-                    echo 'No existing infrastructure found. Proceeding with creation...'
-                    env.INFRA_EXISTS = 'false'
+                    if (networks || subnets || addresses) {
+                        echo 'Existing infrastructure found. Skipping creation steps...'
+                        env.INFRA_EXISTS = 'true'
+                    } else {
+                        echo 'No existing infrastructure found. Proceeding with creation...'
+                        env.INFRA_EXISTS = 'false'
+                    }
                 }
             }
         }
     }
-
     stage('Plan Infrastructure') {
         when {
             expression { return env.INFRA_EXISTS == 'false' }
@@ -90,7 +96,6 @@ pipeline {
             }
         }
     }
-
     stage('Apply Infrastructure') {
         when {
             expression { return env.INFRA_EXISTS == 'false' }
@@ -105,20 +110,20 @@ pipeline {
     }
 
     stage('Fetch VM IPs') {
-            steps {
-                script {
-                    if (env.INFRA_EXISTS == 'false') {
-                        dir('ci_cd/Terraform') {
-                            def masterIp = sh(script: 'terraform output -raw master_ip', returnStdout: true).trim()
-                            def workerIp = sh(script: 'terraform output -raw worker_ip', returnStdout: true).trim()
+        steps {
+            script {
+                if (env.INFRA_EXISTS == 'false') {
+                    dir('ci_cd/Terraform') {
+                        def masterIp = sh(script: 'terraform output -raw master_ip', returnStdout: true).trim()
+                        def workerIp = sh(script: 'terraform output -raw worker_ip', returnStdout: true).trim()
 
-                            env.MASTER_IP = masterIp
-                            env.WORKER_IP = workerIp
+                        env.MASTER_IP = masterIp
+                        env.WORKER_IP = workerIp
 
-                            echo "Master IP: ${MASTER_IP}, Worker IP: ${WORKER_IP}"
-                        }
-                    } else {
-                        // Если инфраструктура существует, получаем IP из существующих ресурсов
+                        echo "Master IP: ${MASTER_IP}, Worker IP: ${WORKER_IP}"
+                    }
+                } else {
+                    withEnv(["PATH+YC=/home/jenkins/yandex-cloud/bin", "PATH+JQ=/usr/bin"]) {
                         def masterIp = sh(script: 'yc compute instance list --format json | jq -r \'.[0].network_interfaces[0].ip_addresses[0]\'', returnStdout: true).trim()
                         def workerIp = sh(script: 'yc compute instance list --format json | jq -r \'.[1].network_interfaces[0].ip_addresses[0]\'', returnStdout: true).trim()
 
@@ -130,6 +135,7 @@ pipeline {
                 }
             }
         }
+    }
     //===
 
     stage('Deploy VM Setup') {
