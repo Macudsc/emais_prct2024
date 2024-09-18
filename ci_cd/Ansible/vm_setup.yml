@@ -11,9 +11,30 @@
         update_cache: yes
         cache_valid_time: 3600
 
+    - name: Исправить сломанные зависимости
+      apt:
+        upgrade: dist
+        force_apt_get: yes
+        state: latest
+        autoremove: yes
+
+    - name: Запустить apt --fix-broken install для исправления зависимостей
+      shell: apt --fix-broken install -y
+      ignore_errors: yes
+
     - name: Удалить проблемные пакеты NVIDIA
       apt:
-        name: 'nvidia-*'
+        name: 
+          - 'nvidia-compute-utils-510'
+          - 'nvidia-container-toolkit'
+          - 'nvidia-docker2'
+          - 'nvidia-firmware-535-535.183.01'
+          - 'nvidia-kernel-source-510'
+          - 'nvidia-kernel-source-535'
+          - 'nvidia-modprobe'
+          - 'nvidia-prime'
+          - 'nvidia-settings'
+          - 'nvidia-utils-510'
         state: absent
         autoremove: yes
 
