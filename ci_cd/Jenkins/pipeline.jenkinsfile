@@ -8,9 +8,7 @@ pipeline {
         CLOUD_ID = credentials('yandex-cloud-id')
         FOLDER_ID = credentials('yandex-folder-id')
         YC_TOKEN = credentials('yandex-token')
-        //MASTER_IP = ""
-        //WORKER_IP = ""
-        PATH = "${env.PATH}:/home/jenkins/yandex-cloud/bin"  // Добавляем путь к yc CLI
+        PATH = "${env.PATH}:/home/jenkins/yandex-cloud/bin" // Добавляем путь к yc CLI
   }
   stages {
     stage('Checkout github') {
@@ -40,11 +38,15 @@ pipeline {
             withCredentials([string(credentialsId: 'terraform-ssh-pubkey', variable: 'SSH_PUBKEY')]) {
                 script {
                     def sshPubKey = "${SSH_PUBKEY}".trim()
+                    echo "Публичный ключ: ${sshPubKey}"
+
                     sh """
                       sed 's|{{ ssh_key }}|${sshPubKey}|' ci_cd/Terraform/cloud-config > ci_cd/Terraform/cloud-config-gen
                     """
+                    echo "Исходный cloud-config:"
                     sh "cat ci_cd/Terraform/cloud-config"
-                    echo "genka"
+                    
+                    echo "Сгенерированный cloud-config:"
                     sh "cat ci_cd/Terraform/cloud-config-gen"
                     sh "mv ci_cd/Terraform/cloud-config-gen ci_cd/Terraform/cloud-config"
                 }
@@ -104,7 +106,7 @@ pipeline {
             }
         }
 }
-    stage('Plan Infrastructure') {
+    stage('Plan and Apply Infrastructure') {
         when {
             expression { return env.INFRA_EXISTS == 'false' }
         }
@@ -113,22 +115,23 @@ pipeline {
                 dir('ci_cd/Terraform') {
                     sh 'terraform init'
                     sh 'terraform plan -var-file="vars.tfvars" -var-file="creds.tfvars" -out=tfplan'
-                }
-            }
-        }
-    }
-    stage('Apply Infrastructure') {
-        when {
-            expression { return env.INFRA_EXISTS == 'false' }
-        }
-        steps {
-            script {
-                dir('ci_cd/Terraform') {
                     sh 'terraform apply -auto-approve tfplan'
                 }
             }
         }
     }
+    //stage('Apply Infrastructure') {
+    //    when {
+    //        expression { return env.INFRA_EXISTS == 'false' }
+    //    }
+    //    steps {
+    //        script {
+    //            dir('ci_cd/Terraform') {
+    //                sh 'terraform apply -auto-approve tfplan'
+    //            }
+    //        }
+    //    }
+    //}
     stage('Fetch VM IPs') {
         steps {
             script {
@@ -167,11 +170,19 @@ pipeline {
             withCredentials([sshUserPrivateKey(credentialsId: 'vm-ssh-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
                 script {
                     // Добавляем ключи хостов
-                    sh """
-                        sleep 10
-                        ssh-keyscan -H ${MASTER_IP} >> ~/.ssh/known_hosts
-                        ssh-keyscan -H ${WORKER_IP} >> ~/.ssh/known_hosts
-                    """
+                    if (env.INFRA_EXISTS = 'false') {
+                        sh """
+                            sleep 20
+                            ssh-keyscan -H ${MASTER_IP} >> ~/.ssh/known_hosts
+                            ssh-keyscan -H ${WORKER_IP} >> ~/.ssh/known_hosts
+                        """
+                    } else {
+                        sh """
+                            ssh-keyscan -H ${MASTER_IP} >> ~/.ssh/known_hosts
+                            ssh-keyscan -H ${WORKER_IP} >> ~/.ssh/known_hosts
+                        """
+                    }
+
                     sh 'cat ~/.ssh/known_hosts | tail -n 2'
 
                     ansiblePlaybook(
