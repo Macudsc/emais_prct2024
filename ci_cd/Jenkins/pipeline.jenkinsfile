@@ -49,6 +49,7 @@ pipeline {
     }
     stage('Install yc CLI') {
         steps {
+            sh 'echo $USER'
             sh '''
             curl -sL https://storage.yandexcloud.net/yandexcloud-yc/install.sh | bash
             export PATH=$PATH:/home/jenkins/yandex-cloud/bin
