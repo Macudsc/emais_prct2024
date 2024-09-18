@@ -167,10 +167,9 @@ pipeline {
                 script {
                     // Добавляем ключи хостов
                     sh """
+                        sleep 10
                         ssh-keyscan -H ${MASTER_IP} >> ~/.ssh/known_hosts
-                        sleep 2
                         ssh-keyscan -H ${WORKER_IP} >> ~/.ssh/known_hosts
-                        sleep 2
                     """
                     sh 'cat ~/.ssh/known_hosts | tail -n 2'
 
