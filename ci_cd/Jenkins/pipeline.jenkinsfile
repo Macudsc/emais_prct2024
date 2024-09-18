@@ -64,31 +64,31 @@ pipeline {
         steps {
             withEnv(["PATH+YC=/home/jenkins/yandex-cloud/bin"]) {
                 script {
-                    // Проверка наличия сети с именем network1
+                    // Проверка наличия сети
                     def networkExists = sh(
                         script: 'yc vpc network list --format json | jq -e \'.[] | select(.name == "network1")\'',
                         returnStatus: true
                     ) == 0
 
-                    // Проверка наличия подсети с именем subnet1
+                    // Проверка наличия подсети
                     def subnetExists = sh(
                         script: 'yc vpc subnet list --format json | jq -e \'.[] | select(.name == "subnet1")\'',
                         returnStatus: true
                     ) == 0
 
-                    // Проверка наличия мастера с именем k8s-master-0
+                    // Проверка наличия мастера
                     def masterExists = sh(
                         script: 'yc compute instance list --format json | jq -e \'.[] | select(.name == "k8s-master-0")\'',
                         returnStatus: true
                     ) == 0
 
-                    // Проверка наличия воркера с именем k8s-worker-0
+                    // Проверка наличия воркера
                     def workerExists = sh(
                         script: 'yc compute instance list --format json | jq -e \'.[] | select(.name == "k8s-worker-0")\'',
                         returnStatus: true
                     ) == 0
 
-                    // Если все ресурсы существуют, то пропускаем создание инфраструктуры
+                    // Если все ресурсы существуют, то пропуск создания инфраструктуры
                     if (networkExists && subnetExists && masterExists && workerExists) {
                         echo 'Existing infrastructure found. Skipping creation steps...'
                         env.INFRA_EXISTS = 'true'
