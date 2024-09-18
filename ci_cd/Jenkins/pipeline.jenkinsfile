@@ -39,10 +39,10 @@ pipeline {
       steps {
         withCredentials([string(credentialsId: 'terraform-ssh-pubkey', variable: 'SSH_PUBKEY')]) {
           script {
-            // Считываем публичный ключ из переменной
+            // Считываем публичный ключ
             def sshPubKey = "${SSH_PUBKEY}".trim()
 
-            // Заменяем {{ ssh_key }} в cloud-config на реальный публичный SSH ключ
+            // Заменяем {{ ssh_key }} в cloud-config на публичный ключ
             sh """
               sed 's|{{ ssh_key }}|${sshPubKey}|' ci_cd/Terraform/cloud-config > ci_cd/Terraform/cloud-config-gen
             """
@@ -50,16 +50,28 @@ pipeline {
         }
       }
     }
-    stage('Deploy Infrastructure') {
+
+    stage('Plan Infrastructure') {
       steps {
         script {
           dir('ci_cd/Terraform') {
             sh 'terraform init'
-            sh 'terraform apply -var-file="vars.tfvars" -var-file="creds.tfvars" -auto-approve'
+            sh 'terraform plan -var-file="vars.tfvars" -var-file="creds.tfvars" -out=tfplan'
           }
         }
       }
     }
+
+    stage('Apply Infrastructure') {
+      steps {
+        script {
+          dir('ci_cd/Terraform') {
+            sh 'terraform apply -auto-approve tfplan'
+          }
+        }
+      }
+    }
+
     stage('Fetch VM IPs') {
       steps {
         dir('ci_cd/Terraform') {
