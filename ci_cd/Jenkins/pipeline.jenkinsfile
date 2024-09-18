@@ -22,122 +22,115 @@ pipeline {
         sh "echo \"tokenn='${TG_BOT_TOKEN}'\" >> Emais/sensetiv.py"
       }
     }
-    //===
     stage('Generate creds.tfvars') {
-        steps {
-            script {
-                sh """
-                echo 'cloud_id  = "${CLOUD_ID}"' > ci_cd/Terraform/creds.tfvars
-                echo 'folder_id = "${FOLDER_ID}"' >> ci_cd/Terraform/creds.tfvars
-                echo 'token     = "${YC_TOKEN}"' >> ci_cd/Terraform/creds.tfvars
-                """
-            }
+      steps {
+        script {
+          sh """
+            echo 'cloud_id  = "${CLOUD_ID}"' > ci_cd/Terraform/creds.tfvars
+            echo 'folder_id = "${FOLDER_ID}"' >> ci_cd/Terraform/creds.tfvars
+            echo 'token     = "${YC_TOKEN}"' >> ci_cd/Terraform/creds.tfvars
+          """
         }
+      }
     }
 
     stage('Generate cloud-config') {
-        steps {
-            withCredentials([string(credentialsId: 'terraform-ssh-pubkey', variable: 'SSH_PUBKEY')]) {
-                script {
-                    def sshPubKey = "${SSH_PUBKEY}".trim()
-                    sh """
-                      sed 's|{{ ssh_key }}|${sshPubKey}|' ci_cd/Terraform/cloud-config > ci_cd/Terraform/cloud-config-gen
-                    """
-                }
-            }
+      steps {
+        withCredentials([string(credentialsId: 'terraform-ssh-pubkey', variable: 'SSH_PUBKEY')]) {
+          script {
+            def sshPubKey = "${SSH_PUBKEY}".trim()
+            sh """
+              sed 's|{{ ssh_key }}|${sshPubKey}|' ci_cd/Terraform/cloud-config > ci_cd/Terraform/cloud-config-gen
+            """
+          }
         }
+      }
     }
-    //stage('Install jq') {
-    //    steps {
-    //        sh 'apt-get update && apt-get install -y jq'
-    //    }
-    //}
     stage('Install and Use yc CLI') {
-        steps {
-            sh '''
-            curl -sL https://storage.yandexcloud.net/yandexcloud-yc/install.sh | bash
-            export PATH=$PATH:/home/jenkins/yandex-cloud/bin
-            echo "PATH=$PATH"
-            yc vpc network list --format json
-            yc vpc subnet list --format json
-            yc vpc address list --format json
-            '''
-        }
+      steps {
+        sh '''
+          curl -sL https://storage.yandexcloud.net/yandexcloud-yc/install.sh | bash
+          export PATH=$PATH:/home/jenkins/yandex-cloud/bin
+          echo "PATH=$PATH"
+          yc vpc network list --format json
+          yc vpc subnet list --format json
+          yc vpc address list --format json
+        '''
+      }
     }
     stage('Check Existing Infrastructure') {
-        steps {
-            withEnv(["PATH+YC=/home/jenkins/yandex-cloud/bin"]) {
-                script {
-                    def networks = sh(script: 'yc vpc network list --format json', returnStdout: true).trim()
-                    def subnets = sh(script: 'yc vpc subnet list --format json', returnStdout: true).trim()
-                    def addresses = sh(script: 'yc vpc address list --format json', returnStdout: true).trim()
+      steps {
+        withEnv(["PATH+YC=/home/jenkins/yandex-cloud/bin"]) {
+          script {
+            def networks = sh(script: 'yc vpc network list --format json', returnStdout: true).trim()
+            def subnets = sh(script: 'yc vpc subnet list --format json', returnStdout: true).trim()
+            def addresses = sh(script: 'yc vpc address list --format json', returnStdout: true).trim()
 
-                    if (networks || subnets || addresses) {
-                        echo 'Existing infrastructure found. Skipping creation steps...'
-                        env.INFRA_EXISTS = 'true'
-                    } else {
-                        echo 'No existing infrastructure found. Proceeding with creation...'
-                        env.INFRA_EXISTS = 'false'
-                    }
-                }
+            if (networks || subnets || addresses) {
+              echo 'Existing infrastructure found. Skipping creation steps...'
+              env.INFRA_EXISTS = 'true'
+            } else {
+              echo 'No existing infrastructure found. Proceeding with creation...'
+              env.INFRA_EXISTS = 'false'
             }
+          }
         }
+      }
     }
     stage('Plan Infrastructure') {
-        when {
-            expression { return env.INFRA_EXISTS == 'false' }
+      when {
+        expression { return env.INFRA_EXISTS == 'false' }
+      }
+      steps {
+        script {
+          dir('ci_cd/Terraform') {
+            sh 'terraform init'
+            sh 'terraform plan -var-file="vars.tfvars" -var-file="creds.tfvars" -out=tfplan'
+          }
         }
-        steps {
-            script {
-                dir('ci_cd/Terraform') {
-                    sh 'terraform init'
-                    sh 'terraform plan -var-file="vars.tfvars" -var-file="creds.tfvars" -out=tfplan'
-                }
-            }
-        }
+      }
     }
     stage('Apply Infrastructure') {
-        when {
-            expression { return env.INFRA_EXISTS == 'false' }
+      when {
+        expression { return env.INFRA_EXISTS == 'false' }
+      }
+      steps {
+        script {
+          dir('ci_cd/Terraform') {
+            sh 'terraform apply -auto-approve tfplan'
+          }
         }
-        steps {
-            script {
-                dir('ci_cd/Terraform') {
-                    sh 'terraform apply -auto-approve tfplan'
-                }
-            }
-        }
+      }
     }
-
     stage('Fetch VM IPs') {
-        steps {
-            script {
-                if (env.INFRA_EXISTS == 'false') {
-                    dir('ci_cd/Terraform') {
-                        def masterIp = sh(script: 'terraform output -raw master_ip', returnStdout: true).trim()
-                        def workerIp = sh(script: 'terraform output -raw worker_ip', returnStdout: true).trim()
+      steps {
+        script {
+          if (env.INFRA_EXISTS == 'false') {
+            dir('ci_cd/Terraform') {
+              def masterIp = sh(script: 'terraform output -raw master_ip', returnStdout: true).trim()
+              def workerIp = sh(script: 'terraform output -raw worker_ip', returnStdout: true).trim()
 
-                        env.MASTER_IP = masterIp
-                        env.WORKER_IP = workerIp
+              env.MASTER_IP = masterIp
+              env.WORKER_IP = workerIp
 
-                        echo "Master IP: ${MASTER_IP}, Worker IP: ${WORKER_IP}"
-                    }
-                } else {
-                    withEnv(["PATH+YC=/home/jenkins/yandex-cloud/bin", "PATH+JQ=/usr/bin"]) {
-                        def masterIp = sh(script: 'yc compute instance list --format json | jq -r \'.[0].network_interfaces[0].ip_addresses[0]\'', returnStdout: true).trim()
-                        def workerIp = sh(script: 'yc compute instance list --format json | jq -r \'.[1].network_interfaces[0].ip_addresses[0]\'', returnStdout: true).trim()
-
-                        env.MASTER_IP = masterIp
-                        env.WORKER_IP = workerIp
-
-                        echo "Existing Master IP: ${MASTER_IP}, Existing Worker IP: ${WORKER_IP}"
-                    }
-                }
+              echo "Master IP: ${MASTER_IP}, Worker IP: ${WORKER_IP}"
             }
-        }
-    }
-    //===
+          } else {
+            withEnv(["PATH+YC=/home/jenkins/yandex-cloud/bin", "PATH+JQ=/usr/bin"]) {
+              script {
+                def masterIp = sh(script: 'yc compute instance list --format json | jq -r \'.[0].network_interfaces[0].ip_addresses[0]\'', returnStdout: true).trim()
+                def workerIp = sh(script: 'yc compute instance list --format json | jq -r \'.[1].network_interfaces[0].ip_addresses[0]\'', returnStdout: true).trim()
 
+                env.MASTER_IP = masterIp
+                env.WORKER_IP = workerIp
+
+                echo "Existing Master IP: ${MASTER_IP}, Existing Worker IP: ${WORKER_IP}"
+              }
+            }
+          }
+        }
+      }
+    }
     stage('Deploy VM Setup') {
       steps {
         withCredentials([sshUserPrivateKey(credentialsId: 'vm-ssh-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
@@ -152,31 +145,31 @@ pipeline {
       }
     }
     stage('Install Kubernetes with Kubespray') {
-        steps {
-            withCredentials([sshUserPrivateKey(credentialsId: 'vm-ssh-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
-                script {
-                    ansiblePlaybook(
-                      playbook: 'ci_cd/Ansible/kubespray_setup.yml',
-                      inventory: "${MASTER_IP},${WORKER_IP},",
-                      extras: "-e master_ip=${MASTER_IP} -e worker_ip=${WORKER_IP} -e ansible_user=root -e ansible_ssh_private_key_file=${SSH_KEY}"
-                    )
-                }
-            }
+      steps {
+        withCredentials([sshUserPrivateKey(credentialsId: 'vm-ssh-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
+          script {
+            ansiblePlaybook(
+              playbook: 'ci_cd/Ansible/kubespray_setup.yml',
+              inventory: "${MASTER_IP},${WORKER_IP},",
+              extras: "-e master_ip=${MASTER_IP} -e worker_ip=${WORKER_IP} -e ansible_user=root -e ansible_ssh_private_key_file=${SSH_KEY}"
+            )
+          }
         }
+      }
     }
     stage('Fetch and Replace kubeconfig') {
-        steps {
-            withCredentials([sshUserPrivateKey(credentialsId: 'vm-ssh-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
-                script {
-                    sh """
-                      scp -i ${SSH_KEY} ${SSH_USER}@${MASTER_IP}:/root/.kube/config /tmp/kubeconfig
-                    """
-                    sh """
-                      sed -i 's|https://127.0.0.1:6443|https://${MASTER_IP}:6443|g' /tmp/kubeconfig
-                    """
-                }
-            }
+      steps {
+        withCredentials([sshUserPrivateKey(credentialsId: 'vm-ssh-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
+          script {
+            sh """
+              scp -i ${SSH_KEY} ${SSH_USER}@${MASTER_IP}:/root/.kube/config /tmp/kubeconfig
+            """
+            sh """
+              sed -i 's|https://127.0.0.1:6443|https://${MASTER_IP}:6443|g' /tmp/kubeconfig
+            """
+          }
         }
+      }
     }
     stage('Deploy to K8s') {
       steps {
