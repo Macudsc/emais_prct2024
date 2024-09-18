@@ -117,10 +117,23 @@ pipeline {
                     }
                 } else {
                     withEnv(["PATH+YC=/home/jenkins/yandex-cloud/bin"]) {
-                        // Получаем IP адреса через jq для корректного парсинга
-                        def masterIp = sh(script: 'yc compute instance list --format json | jq -r \'.[] | select(.name == "k8s-master-0") | .network_interfaces[].primary_v4_address.one_to_one_nat.address\'', returnStdout: true).trim()
-                        def workerIp = sh(script: 'yc compute instance list --format json | jq -r \'.[] | select(.name == "k8s-worker-0") | .network_interfaces[].primary_v4_address.one_to_one_nat.address\'', returnStdout: true).trim()
+                        // Получаем полный JSON от yc compute instance list
+                        def jsonOutput = sh(script: 'yc compute instance list --format json', returnStdout: true).trim()
+                        echo "JSON Output: ${jsonOutput}"
 
+                        // Выбираем IP для master
+                        def masterIp = sh(script: """
+                            echo '${jsonOutput}' | jq -r '.[] | select(.name == "k8s-master-0") | .network_interfaces[].primary_v4_address.one_to_one_nat.address'
+                        """, returnStdout: true).trim()
+                        echo "Master IP: ${masterIp}"
+
+                        // Выбираем IP для worker
+                        def workerIp = sh(script: """
+                            echo '${jsonOutput}' | jq -r '.[] | select(.name == "k8s-worker-0") | .network_interfaces[].primary_v4_address.one_to_one_nat.address'
+                        """, returnStdout: true).trim()
+                        echo "Worker IP: ${workerIp}"
+
+                        // Устанавливаем переменные окружения
                         env.MASTER_IP = masterIp
                         env.WORKER_IP = workerIp
 
