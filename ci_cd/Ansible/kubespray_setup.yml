@@ -35,12 +35,12 @@
       args:
         chdir: /root/kubespray
 
-    - name: Запустить настройку кластера Kubernetes
-      shell: |
-        cd /root/kubespray
-        ansible-playbook -i inventory/mycluster/hosts.yml --private-key ~/.ssh/id_rsa --become --become-user=root cluster.yml -vvv
-      args:
-        chdir: /root/kubespray
+    #- name: Запустить настройку кластера Kubernetes
+    #  shell: |
+    #    cd /root/kubespray
+    #    ansible-playbook -i inventory/mycluster/hosts.yml --private-key ~/.ssh/id_rsa --become --become-user=root cluster.yml
+    #  args:
+    #    chdir: /root/kubespray
 
     - name: Проверить, существует ли kubeconfig
       stat:
@@ -59,3 +59,13 @@
         dest: /tmp/kubeconfig
         flat: yes
       when: kubeconfig_file.stat.exists
+
+    - name: Включить планирование на всех узлах
+      shell: kubectl uncordon $(kubectl get nodes --no-headers -o custom-columns=":metadata.name")
+      environment:
+        KUBECONFIG: /root/.kube/config
+      register: uncordon_result
+
+    - name: Печать результата uncordon
+      debug:
+        msg: "{{ uncordon_result.stdout }}"
