@@ -11,6 +11,15 @@
         update_cache: yes
         cache_valid_time: 3600
 
+    - name: Удалить проблемные пакеты NVIDIA
+      apt:
+        name: 'nvidia-*'
+        state: absent
+        autoremove: yes
+
+    - name: Заблокировать обновление пакетов NVIDIA
+      command: apt-mark hold 'nvidia-*'
+
     - name: Исправить поврежденные пакеты
       command: dpkg --configure -a
 
