@@ -90,10 +90,10 @@ pipeline {
 
                     // Если все ресурсы существуют, то пропуск создания инфраструктуры
                     if (networkExists && subnetExists && masterExists && workerExists) {
-                        echo 'Existing infrastructure found. Skipping creation steps...'
+                        echo 'Инфраструктура найдена. Пропуск шагов создания...'
                         env.INFRA_EXISTS = 'true'
                     } else {
-                        echo 'No existing infrastructure found. Proceeding with creation...'
+                        echo 'Инфраструктура не готова, создание заново...'
                         env.INFRA_EXISTS = 'false'
                     }
                 }
