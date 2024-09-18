@@ -132,11 +132,11 @@ pipeline {
                     echo "Worker IP from YC CLI: ${workerIp}"
                 }
 
-                // Устанавливаем переменные окружения
+                // Устанавливаем нормальные переменные окружения
                 env.MASTER_IP = masterIp
                 env.WORKER_IP = workerIp
 
-                // Логируем IP-адреса
+                // Выводим IP-адреса
                 echo "Existing Master IP: ${env.MASTER_IP}"
                 echo "Existing Worker IP: ${env.WORKER_IP}"
             }
@@ -145,17 +145,23 @@ pipeline {
     //===
 
     stage('Deploy VM Setup') {
-      steps {
-        withCredentials([sshUserPrivateKey(credentialsId: 'vm-ssh-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
-          script {
-            ansiblePlaybook(
-              playbook: 'ci_cd/Ansible/vm_setup.yml',
-              inventory: "${MASTER_IP},${WORKER_IP},",
-              extras: "-e ansible_user=${SSH_USER} -e ansible_ssh_private_key_file=${SSH_KEY}"
-            )
-          }
+        steps {
+            sshagent(['vm-ssh-key']) {
+                script {
+                    // Добавляем ключи хостов
+                    sh """
+                        ssh-keyscan -H ${MASTER_IP} >> ~/.ssh/known_hosts
+                        ssh-keyscan -H ${WORKER_IP} >> ~/.ssh/known_hosts
+                    """
+                    
+                    ansiblePlaybook(
+                        playbook: 'ci_cd/Ansible/vm_setup.yml',
+                        inventory: "${MASTER_IP},${WORKER_IP},",
+                        extras: "-e ansible_user=${SSH_USER} -e ansible_ssh_private_key_file=${SSH_KEY}"
+                    )
+                }
+            }
         }
-      }
     }
     stage('Install Kubernetes with Kubespray') {
       steps {
