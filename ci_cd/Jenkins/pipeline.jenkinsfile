@@ -116,8 +116,8 @@ pipeline {
                         writeFile(file: masterIpFile, text: masterIp)
                         writeFile(file: workerIpFile, text: workerIp)
 
-                        sh "cat ${masterIpFile}"
-                        sh "cat ${workerIpFile}"
+                        sh "echo 'Contents of ${masterIpFile}: $(cat ${masterIpFile})'"
+                        sh "echo 'Contents of ${workerIpFile}: $(cat ${workerIpFile})'"
 
                         echo "Master IP: ${masterIp}, Worker IP: ${workerIp}"
                     }
@@ -136,13 +136,14 @@ pipeline {
                         writeFile(file: masterIpFile, text: masterIp)
                         writeFile(file: workerIpFile, text: workerIp)
 
-                        sh "cat ${masterIpFile}"
-                        sh "cat ${workerIpFile}"
+                        sh "echo 'Contents of ${masterIpFile}: $(cat ${masterIpFile})'"
+                        sh "echo 'Contents of ${workerIpFile}: $(cat ${workerIpFile})'"
 
                         echo "Master IP: ${masterIp}, Worker IP: ${workerIp}"
                     }
                 }
 
+                // Убедитесь, что файлы существуют перед чтением
                 dir('ci_cd/Terraform') {
                     if (fileExists(masterIpFile) && fileExists(workerIpFile)) {
                         env.MASTER_IP = readFile(masterIpFile).trim()
