@@ -1,3 +1,4 @@
+// ci_cd/Jenkins/pipeline.jenkinsfile
 pipeline {
   agent any
   environment {
@@ -18,18 +19,15 @@ pipeline {
     }
     stage('Setup VM with Ansible') {
       steps {
-        withCredentials([
-          sshUserPrivateKey(credentialsId: 'vm-ssh-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER'),
-          string(credentialsId: 'vm_ip', variable: 'VM_IP')
-        ]) {
+        withCredentials([sshUserPrivateKey(credentialsId: 'vm-ssh-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
           script {
             sh """
-              ssh-keyscan -H ${VM_IP} >> ~/.ssh/known_hosts
+              ssh-keyscan -H ${params.VM_IP} >> ~/.ssh/known_hosts
             """
             ansiblePlaybook(
               playbook: 'ci_cd/Ansible/vm_setup.yml',
-              inventory: "${VM_IP},",
-              extras: "-e ansible_user=${SSH_USER} -e ansible_host=${VM_IP} -e ansible_ssh_private_key_file=${SSH_KEY}"
+              inventory: "${params.VM_IP},",
+              extras: "-e ansible_user=${params.VM_USER} -e ansible_host=${params.VM_IP} -e ansible_ssh_private_key_file=${SSH_KEY}"
             )
           }
         }
@@ -38,15 +36,12 @@ pipeline {
 
     stage('Install Kubernetes with Kubespray') {
       steps {
-        withCredentials([
-          sshUserPrivateKey(credentialsId: 'vm-ssh-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER'),
-          string(credentialsId: 'vm_ip', variable: 'VM_IP')
-        ]) {
+        withCredentials([sshUserPrivateKey(credentialsId: 'vm-ssh-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
           script {
             ansiblePlaybook(
               playbook: 'ci_cd/Ansible/kubespray_setup.yml',
-              inventory: "${VM_IP},",
-              extras: "-e ansible_user=${SSH_USER} -e ansible_host=${VM_IP} -e ansible_ssh_private_key_file=${SSH_KEY}"
+              inventory: "${params.VM_IP},",
+              extras: "-e ansible_user=${params.VM_USER} -e ansible_host=${params.VM_IP} -e ansible_ssh_private_key_file=${SSH_KEY}"
             )
           }
         }
@@ -68,7 +63,7 @@ pipeline {
       }
     }
 
-            //stage('Build Docker Image PIPELINE') {
+    //stage('Build Docker Image PIPELINE') {
     //  steps {
     //    script {
     //      docker.build('komapolson/emais-app:latest')
