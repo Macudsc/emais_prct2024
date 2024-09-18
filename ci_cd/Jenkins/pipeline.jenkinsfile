@@ -120,18 +120,6 @@ pipeline {
             }
         }
     }
-    //stage('Apply Infrastructure') {
-    //    when {
-    //        expression { return env.INFRA_EXISTS == 'false' }
-    //    }
-    //    steps {
-    //        script {
-    //            dir('ci_cd/Terraform') {
-    //                sh 'terraform apply -auto-approve tfplan'
-    //            }
-    //        }
-    //    }
-    //}
     stage('Fetch VM IPs') {
         steps {
             script {
@@ -152,13 +140,10 @@ pipeline {
                 echo "Master IP from YC CLI: ${masterIp}"
                 echo "Worker IP from YC CLI: ${workerIp}"
 
-                // Устанавливаем переменные окружения с IP-адресами
                 env.MASTER_IP = masterIp
                 env.WORKER_IP = workerIp
 
-                // Выводим IP-адреса
-                echo "Existing Master IP: ${env.MASTER_IP}"
-                echo "Existing Worker IP: ${env.WORKER_IP}"
+                echo "Master IP: ${env.MASTER_IP}; Worker IP: ${env.WORKER_IP}"
             }
         }
     }
@@ -170,7 +155,7 @@ pipeline {
             withCredentials([sshUserPrivateKey(credentialsId: 'vm-ssh-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
                 script {
                     // Добавляем ключи хостов
-                    if (env.INFRA_EXISTS = 'false') {
+                    if (env.INFRA_EXISTS == 'false') {
                         sh """
                             sleep 20
                             ssh-keyscan -H ${MASTER_IP} >> ~/.ssh/known_hosts
