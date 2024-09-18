@@ -133,11 +133,11 @@ pipeline {
                         """, returnStdout: true).trim()
                         echo "Worker IP: ${workerIp}"
 
-                        // Устанавливаем переменные окружения
-                        env.MASTER_IP = masterIp
-                        env.WORKER_IP = workerIp
+                        // Устанавливаем переменные окружения через envVars
+                        envVars.put('MASTER_IP', masterIp)
+                        envVars.put('WORKER_IP', workerIp)
 
-                        echo "Existing Master IP: ${env.MASTER_IP}, Existing Worker IP: ${env.WORKER_IP}"
+                        echo "Existing Master IP: ${envVars['MASTER_IP']}, Existing Worker IP: ${envVars['WORKER_IP']}"
                     }
                 }
             }
