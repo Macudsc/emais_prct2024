@@ -8,8 +8,8 @@ pipeline {
         CLOUD_ID = credentials('yandex-cloud-id')
         FOLDER_ID = credentials('yandex-folder-id')
         YC_TOKEN = credentials('yandex-token')
-        //MASTER_IP = ""
-        //WORKER_IP = ""
+        MASTER_IP = ""
+        WORKER_IP = ""
         PATH = "${env.PATH}:/home/jenkins/yandex-cloud/bin"  // Добавляем путь к yc CLI
   }
   stages {
@@ -59,7 +59,7 @@ pipeline {
         '''
       }
     }
-
+    // Надо будет исправить на поиск именных ресурсов: network1, subnet1, k8s-worker-${count.index}
     stage('Check Existing Infrastructure') {
         steps {
             withEnv(["PATH+YC=/home/jenkins/yandex-cloud/bin"]) {
@@ -146,7 +146,7 @@ pipeline {
 
     stage('Deploy VM Setup') {
         steps {
-            sshagent(['vm-ssh-key']) {
+            withCredentials([sshUserPrivateKey(credentialsId: 'vm-ssh-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
                 script {
                     // Добавляем ключи хостов
                     sh """
@@ -164,32 +164,34 @@ pipeline {
         }
     }
     stage('Install Kubernetes with Kubespray') {
-      steps {
-        withCredentials([sshUserPrivateKey(credentialsId: 'vm-ssh-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
-          script {
-            ansiblePlaybook(
-              playbook: 'ci_cd/Ansible/kubespray_setup.yml',
-              inventory: "${MASTER_IP},${WORKER_IP},",
-              extras: "-e master_ip=${MASTER_IP} -e worker_ip=${WORKER_IP} -e ansible_user=root -e ansible_ssh_private_key_file=${SSH_KEY}"
-            )
-          }
+        steps {
+            withCredentials([sshUserPrivateKey(credentialsId: 'vm-ssh-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
+                script {
+                    ansiblePlaybook(
+                        playbook: 'ci_cd/Ansible/kubespray_setup.yml',
+                        inventory: "${MASTER_IP},${WORKER_IP},",
+                        extras: "-e master_ip=${MASTER_IP} -e worker_ip=${WORKER_IP} -e ansible_user=root -e ansible_ssh_private_key_file=${SSH_KEY}"
+                    )
+                }
+            }
         }
-      }
     }
     stage('Fetch and Replace kubeconfig') {
-      steps {
-        withCredentials([sshUserPrivateKey(credentialsId: 'vm-ssh-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
-          script {
-            sh """
-              scp -i ${SSH_KEY} ${SSH_USER}@${MASTER_IP}:/root/.kube/config /tmp/kubeconfig
-            """
-            sh """
-              sed -i 's|https://127.0.0.1:6443|https://${MASTER_IP}:6443|g' /tmp/kubeconfig
-            """
-          }
+        steps {
+            withCredentials([sshUserPrivateKey(credentialsId: 'vm-ssh-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
+                script {
+                    sh """
+                        scp -i ${SSH_KEY} ${SSH_USER}@${MASTER_IP}:/root/.kube/config /tmp/kubeconfig
+                    """
+                    sh """
+                        sed -i 's|https://127.0.0.1:6443|https://${MASTER_IP}:6443|g' /tmp/kubeconfig
+                    """
+                }
+            }
         }
-      }
     }
+
+    //===
     stage('Deploy to K8s') {
       steps {
         script {
