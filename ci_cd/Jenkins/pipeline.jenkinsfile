@@ -107,48 +107,43 @@ pipeline {
             script {
                 def masterIpFile = 'ci_cd/Terraform/master_ip.txt'
                 def workerIpFile = 'ci_cd/Terraform/worker_ip.txt'
+                def masterIp = ""
+                def workerIp = ""
 
-                // Определяем, существует ли инфраструктура
                 if (env.INFRA_EXISTS == 'false') {
                     dir('ci_cd/Terraform') {
-                        // Получаем IP-адреса из Terraform
-                        def masterIp = sh(script: 'terraform output -raw master_ip', returnStdout: true).trim()
-                        def workerIp = sh(script: 'terraform output -raw worker_ip', returnStdout: true).trim()
+                        masterIp = sh(script: 'terraform output -raw master_ip', returnStdout: true).trim()
+                        workerIp = sh(script: 'terraform output -raw worker_ip', returnStdout: true).trim()
 
-                        // Записываем IP-адреса в файлы
                         writeFile(file: masterIpFile, text: masterIp)
                         writeFile(file: workerIpFile, text: workerIp)
 
-                        // Выводим содержимое файлов для отладки
                         sh "cat ${masterIpFile}"
                         sh "cat ${workerIpFile}"
 
-                        // Логируем IP-адреса
-                        echo "Master IP: ${masterIp}, Worker IP: ${workerIp}"
+                        echo "Master IP from Terraform: ${masterIp}"
+                        echo "Worker IP from Terraform: ${workerIp}"
                     }
                 } else {
-                    // Если инфраструктура существует, получаем IP-адреса через yc CLI
                     withEnv(["PATH+YC=/home/jenkins/yandex-cloud/bin"]) {
                         def jsonOutput = sh(script: 'yc compute instance list --format json', returnStdout: true).trim()
                         echo "JSON Output: ${jsonOutput}"
 
-                        def masterIp = sh(script: """
+                        masterIp = sh(script: """
                             echo '${jsonOutput}' | jq -r '.[] | select(.name == "k8s-master-0") | .network_interfaces[0].primary_v4_address.one_to_one_nat.address'
                         """, returnStdout: true).trim()
-                        def workerIp = sh(script: """
+                        workerIp = sh(script: """
                             echo '${jsonOutput}' | jq -r '.[] | select(.name == "k8s-worker-0") | .network_interfaces[0].primary_v4_address.one_to_one_nat.address'
                         """, returnStdout: true).trim()
 
-                        // Записываем IP-адреса в файлы
                         writeFile(file: masterIpFile, text: masterIp)
                         writeFile(file: workerIpFile, text: workerIp)
 
-                        // Выводим содержимое файлов для отладки
                         sh "cat ${masterIpFile}"
                         sh "cat ${workerIpFile}"
 
-                        // Логируем IP-адреса
-                        echo "Master IP: ${masterIp}, Worker IP: ${workerIp}"
+                        echo "Master IP from YC CLI: ${masterIp}"
+                        echo "Worker IP from YC CLI: ${workerIp}"
                     }
                 }
 
@@ -156,7 +151,8 @@ pipeline {
                 if (fileExists(masterIpFile) && fileExists(workerIpFile)) {
                     env.MASTER_IP = readFile(masterIpFile).trim()
                     env.WORKER_IP = readFile(workerIpFile).trim()
-                    echo "Existing Master IP: ${env.MASTER_IP}, Existing Worker IP: ${env.WORKER_IP}"
+                    echo "Existing Master IP from file: ${env.MASTER_IP}"
+                    echo "Existing Worker IP from file: ${env.WORKER_IP}"
                 } else {
                     error "IP files not found. Check previous stages for errors."
                 }
