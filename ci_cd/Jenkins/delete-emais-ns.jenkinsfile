@@ -4,33 +4,12 @@ pipeline{
       KUBECONFIG_FILE = '/tmp/kubeconfig' // Путь к kubeconfig на Jenkins
     }
     stages{
-        stage('Fetch and Replace kubeconfig') {
-          steps {
-            withCredentials([sshUserPrivateKey(credentialsId: 'vm-ssh-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
-              script {
-                // Скопировать kubeconfig на Jenkins-ноду
-                sh """
-                  scp -i /tmp/.ssh/id_rsa ${SSH_USER}@${params.VM_IP}:/root/.kube/config /tmp/kubeconfig
-                """
-                // Заменить адрес в kubeconfig
-                sh """
-                  sed -i 's|https://127.0.0.1:6443|https://${params.VM_IP}:6443|g' /tmp/kubeconfig
-                """
-              }
-            }
-          }
-        }
         stage('delete K8s emais-ns') {
           steps {
             script {
               sh 'curl -LO "https://storage.googleapis.com/kubernetes-release/release/v1.20.5/bin/linux/amd64/kubectl"'
               sh 'chmod u+x ./kubectl'  
               sh "./kubectl --kubeconfig=${KUBECONFIG_FILE} delete -f ci_cd/K8s/namespace.yml"
-              sh "./kubectl --kubeconfig=${KUBECONFIG_FILE} delete -f ci_cd/K8s/postgres-pvc.yml"
-              sh "./kubectl --kubeconfig=${KUBECONFIG_FILE} delete -f ci_cd/K8s/postgres-deployment.yml"
-              sh "./kubectl --kubeconfig=${KUBECONFIG_FILE} delete -f ci_cd/K8s/mongo-pvc.yml"
-              sh "./kubectl --kubeconfig=${KUBECONFIG_FILE} delete -f ci_cd/K8s/mongo-deployment.yml"
-              sh "./kubectl --kubeconfig=${KUBECONFIG_FILE} delete -f ci_cd/K8s/app-deployment.yml"
             }
           }
         }
