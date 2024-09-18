@@ -157,8 +157,10 @@ pipeline {
                     // Добавляем ключи хостов
                     if (env.INFRA_EXISTS == 'false') {
                         sh """
+                            echo 'Новая инфраструктура...'
                             sleep 20
                             ssh-keyscan -H ${MASTER_IP} >> ~/.ssh/known_hosts
+                            sleep 15
                             ssh-keyscan -H ${WORKER_IP} >> ~/.ssh/known_hosts
                         """
                     } else {
