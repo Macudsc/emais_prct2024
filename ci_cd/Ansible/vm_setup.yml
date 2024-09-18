@@ -3,8 +3,8 @@
 - hosts: all
   become: true
   tasks:
-    - name: Проврка
-      shell: hostname && pwd && whoami && touch someneww.txt
+    - name: Проверка системы
+      shell: hostname && pwd && whoami
 
     - name: Обновить индекс пакетов
       apt:
@@ -37,11 +37,9 @@
         dest: /etc/apt/keyrings/docker.asc
         mode: '0644'
 
-    - name: Добавить репозиторий Docker в источники APT
-      lineinfile:
-        path: /etc/apt/sources.list.d/docker.list
-        line: "deb [arch={{ ansible_architecture }} signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu {{ ansible_lsb.codename }} stable"
-        create: yes
+    - name: Добавить репозиторий Docker через shell
+      shell: |
+        echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
 
     - name: Обновить индекс пакетов после добавления репозитория Docker
       apt:
