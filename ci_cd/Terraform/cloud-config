@@ -1,4 +1,4 @@
-# ci_cd/Terraform/cloud-config
+#cloud-config
 users:
   - name: moon
     groups: wheel
