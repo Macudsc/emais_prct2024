@@ -33,6 +33,6 @@
 
     - name: Скопировать kubeconfig на контроллер Jenkins
       fetch:
-        src: /etc/kubernetes/admin.conf
+        src: /root/.kube/config
         dest: /tmp/kubeconfig
         flat: yes
