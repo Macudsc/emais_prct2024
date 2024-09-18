@@ -6,6 +6,18 @@ pipeline{
       YC_TOKEN = credentials('yandex-token') // Jenkins credential для токена Яндекса
     }
     stages{
+        stage('Generate creds.tfvars') {
+          steps {
+            script {
+              // Создание файла creds.tfvars с использованием креденшиалов от дженкинса
+              sh """
+              echo 'cloud_id  = "${CLOUD_ID}"' > ci_cd/Terraform/creds.tfvars
+              echo 'folder_id = "${FOLDER_ID}"' >> ci_cd/Terraform/creds.tfvars
+              echo 'token     = "${YC_TOKEN}"' >> ci_cd/Terraform/creds.tfvars
+              """
+            }
+          }
+        }
         stage('Destroy terraform infra') {
           steps {
             script {
