@@ -133,8 +133,11 @@ pipeline {
 
                 if (env.INFRA_EXISTS == 'false') {
                     dir('ci_cd/Terraform') {
-                        masterIp = sh(script: 'terraform output -raw master_ip', returnStdout: true).trim()
-                        workerIp = sh(script: 'terraform output -raw worker_ip', returnStdout: true).trim()
+                        def terraformOutput = sh(script: 'terraform output -json', returnStdout: true).trim()
+                        def parsedOutput = readJSON(text: terraformOutput)
+
+                        masterIp = parsedOutput.master_ip.value[0]
+                        workerIp = parsedOutput.worker_ip.value[0]
 
                         echo "Master IP from Terraform: ${masterIp}"
                         echo "Worker IP from Terraform: ${workerIp}"
@@ -154,7 +157,7 @@ pipeline {
                     echo "Worker IP from YC CLI: ${workerIp}"
                 }
 
-                // Устанавливаем нормальные переменные окружения
+                // Устанавливаем переменные окружения с IP-адресами
                 env.MASTER_IP = masterIp
                 env.WORKER_IP = workerIp
 
