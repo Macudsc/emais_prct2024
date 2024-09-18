@@ -2,3 +2,8 @@ sh.sh
 venv
 **/__pycache__/
 node_modules
+
+ci_cd/Terraform/.terraform
+ci_cd/Terraform/.terraform.lock.hcl
+ci_cd/Terraform/terraform.tfstate
+ci_cd/Terraform/terraform.tfstate.backup

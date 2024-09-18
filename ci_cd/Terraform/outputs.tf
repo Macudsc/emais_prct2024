@@ -1,4 +1,8 @@
 # ci_cd/Terraform/outputs.tf
-output "ip" {
-  value = [for vm in yandex_compute_instance.vm-1 : vm.network_interface.0.nat_ip_address]
+output "master_ip" {
+  value = yandex_compute_instance.master.*.network_interface.0.nat_ip_address
+}
+
+output "worker_ip" {
+  value = yandex_compute_instance.worker.*.network_interface.0.nat_ip_address
 }

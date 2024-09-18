@@ -4,6 +4,6 @@ users:
   - name: root
     groups: wheel
     shell: /bin/bash
-    sudo: ['ALL=(ALL) NOPASSWD:ALL'] # спокойно использовать sudo
+    sudo: ['ALL=(ALL) NOPASSWD:ALL']  # Позволяет использовать sudo без пароля
     ssh-authorized-keys:
-      - 
+      - "{{ ssh_key }}"  # SSH ключ от дженкинсюка
