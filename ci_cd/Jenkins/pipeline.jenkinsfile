@@ -116,12 +116,10 @@ pipeline {
                         echo "Master IP: ${env.MASTER_IP}, Worker IP: ${env.WORKER_IP}"
                     }
                 } else {
-                    withEnv(["PATH+YC=/home/jenkins/yandex-cloud/bin", "PATH+JQ=/usr/bin"]) {
-                        def vmList = sh(script: 'yc compute instance list --format json', returnStdout: true).trim()
-                        echo "VM List: ${vmList}" // Для отладки
-
-                        def masterIp = sh(script: 'echo "${vmList}" | jq -r \'.[] | select(.name == "k8s-master-0") | .network_interfaces[0].primary_v4_address.one_to_one_nat.address\'', returnStdout: true).trim()
-                        def workerIp = sh(script: 'echo "${vmList}" | jq -r \'.[] | select(.name == "k8s-worker-0") | .network_interfaces[0].primary_v4_address.one_to_one_nat.address\'', returnStdout: true).trim()
+                    withEnv(["PATH+YC=/home/jenkins/yandex-cloud/bin"]) {
+                        // Получаем IP адреса через grep и awk
+                        def masterIp = sh(script: 'yc compute instance list | grep -A5 "name: k8s-master-0" | grep "one_to_one_nat" | awk \'{print $2}\'', returnStdout: true).trim()
+                        def workerIp = sh(script: 'yc compute instance list | grep -A5 "name: k8s-worker-0" | grep "one_to_one_nat" | awk \'{print $2}\'', returnStdout: true).trim()
 
                         env.MASTER_IP = masterIp
                         env.WORKER_IP = workerIp
