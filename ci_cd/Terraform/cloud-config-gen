@@ -1,8 +1,0 @@
-# ci_cd/Terraform/cloud-config
-users:
-  - name: moon
-    groups: wheel
-    shell: /bin/bash
-    sudo: ['ALL=(ALL) NOPASSWD:ALL']  # Позволяет использовать sudo без пароля
-    ssh-authorized-keys:
-      - "${sshPubKey}"  # Публичный SSH ключ
