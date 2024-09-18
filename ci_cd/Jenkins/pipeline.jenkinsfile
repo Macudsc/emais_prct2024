@@ -118,6 +118,7 @@ pipeline {
                 } else {
                     withEnv(["PATH+YC=/home/jenkins/yandex-cloud/bin", "PATH+JQ=/usr/bin"]) {
                         def vmList = sh(script: 'yc compute instance list --format json', returnStdout: true).trim()
+                        echo "VM List: ${vmList}" // Для отладки
 
                         def masterIp = sh(script: 'echo "${vmList}" | jq -r \'.[] | select(.name == "k8s-master-0") | .network_interfaces[0].primary_v4_address.one_to_one_nat.address\'', returnStdout: true).trim()
                         def workerIp = sh(script: 'echo "${vmList}" | jq -r \'.[] | select(.name == "k8s-worker-0") | .network_interfaces[0].primary_v4_address.one_to_one_nat.address\'', returnStdout: true).trim()
