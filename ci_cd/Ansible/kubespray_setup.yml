@@ -53,6 +53,14 @@
         cp /etc/kubernetes/admin.conf /root/.kube/config
       when: not kubeconfig_file.stat.exists
 
+    - name: Заменить адрес сервера в kubeconfig
+      replace:
+        path: /root/.kube/config
+        regexp: '^(\s*server:\s*)https://127.0.0.1:6443'
+        replace: '\1{{ ansible_host }}:6443'
+      vars:
+        ansible_host: "{{ ansible_host }}"
+
     - name: Скопировать kubeconfig на контроллер Jenkins
       fetch:
         src: /root/.kube/config
