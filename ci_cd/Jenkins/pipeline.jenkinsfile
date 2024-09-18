@@ -37,10 +37,10 @@ pipeline {
     }
     stage('Generate cloud-config') {
       steps {
-        withCredentials([sshUserPrivateKey(credentialsId: 'terraform-ssh-pubkey', keyFileVariable: 'SSH_PUBKEY')]) {
+        withCredentials([string(credentialsId: 'terraform-ssh-pubkey', variable: 'SSH_PUBKEY')]) {
           script {
-            // Считываем публичный ключ в переменную
-            def sshPubKey = sh(script: "cat ${SSH_PUBKEY}", returnStdout: true).trim()
+            // Считываем публичный ключ из переменной
+            def sshPubKey = "${SSH_PUBKEY}".trim()
 
             // Заменяем {{ ssh_key }} в cloud-config на реальный публичный SSH ключ
             sh """
