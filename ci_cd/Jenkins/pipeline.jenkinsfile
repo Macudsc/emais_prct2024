@@ -105,45 +105,47 @@ pipeline {
     stage('Fetch VM IPs') {
         steps {
             script {
+                def masterIpFile = 'master_ip.txt'
+                def workerIpFile = 'worker_ip.txt'
+                
                 if (env.INFRA_EXISTS == 'false') {
                     dir('ci_cd/Terraform') {
                         def masterIp = sh(script: 'terraform output -raw master_ip', returnStdout: true).trim()
                         def workerIp = sh(script: 'terraform output -raw worker_ip', returnStdout: true).trim()
 
-                        writeFile(file: 'master_ip.txt', text: masterIp)
-                        writeFile(file: 'worker_ip.txt', text: workerIp)
+                        // Проверяем, что файлы созданы
+                        writeFile(file: masterIpFile, text: masterIp)
+                        writeFile(file: workerIpFile, text: workerIp)
 
                         echo "Master IP: ${masterIp}, Worker IP: ${workerIp}"
                     }
                 } else {
                     withEnv(["PATH+YC=/home/jenkins/yandex-cloud/bin"]) {
-                        // Получаем JSON
                         def jsonOutput = sh(script: 'yc compute instance list --format json', returnStdout: true).trim()
                         echo "JSON Output: ${jsonOutput}"
 
-                        // IP для master
                         def masterIp = sh(script: """
                             echo '${jsonOutput}' | jq -r '.[] | select(.name == "k8s-master-0") | .network_interfaces[].primary_v4_address.one_to_one_nat.address'
                         """, returnStdout: true).trim()
-                        echo "Master IP: ${masterIp}"
-
-                        // IP для worker
                         def workerIp = sh(script: """
                             echo '${jsonOutput}' | jq -r '.[] | select(.name == "k8s-worker-0") | .network_interfaces[].primary_v4_address.one_to_one_nat.address'
                         """, returnStdout: true).trim()
-                        echo "Worker IP: ${workerIp}"
 
-                        // Сохраняем IP в файлы
-                        writeFile(file: 'master_ip.txt', text: masterIp)
-                        writeFile(file: 'worker_ip.txt', text: workerIp)
+                        writeFile(file: masterIpFile, text: masterIp)
+                        writeFile(file: workerIpFile, text: workerIp)
+
+                        echo "Master IP: ${masterIp}, Worker IP: ${workerIp}"
                     }
                 }
 
-                // Чтение IP из файлов
-                env.MASTER_IP = readFile('master_ip.txt').trim()
-                env.WORKER_IP = readFile('worker_ip.txt').trim()
-
-                echo "Existing Master IP: ${MASTER_IP}, Existing Worker IP: ${WORKER_IP}"
+                // Убедитесь, что файлы существуют перед чтением
+                if (fileExists(masterIpFile) && fileExists(workerIpFile)) {
+                    env.MASTER_IP = readFile(masterIpFile).trim()
+                    env.WORKER_IP = readFile(workerIpFile).trim()
+                    echo "Existing Master IP: ${env.MASTER_IP}, Existing Worker IP: ${env.WORKER_IP}"
+                } else {
+                    error "IP files not found. Check previous stages for errors."
+                }
             }
         }
     }
