@@ -1,6 +1,7 @@
 pipeline{
     agent any
     environment {
+      TG_BOT_TOKEN = credentials('telegram-bot-token')
       CLOUD_ID = credentials('yandex-cloud-id') // Jenkins credential для cloud_id
       FOLDER_ID = credentials('yandex-folder-id') // Jenkins credential для folder_id
       YC_TOKEN = credentials('yandex-token') // Jenkins credential для токена Яндекса
