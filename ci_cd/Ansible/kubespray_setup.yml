@@ -42,6 +42,18 @@
     #  args:
     #    chdir: /root/kubespray
 
+    - name: Установить StorageClass для локального пути
+      shell: |
+        kubectl apply -f https://raw.githubusercontent.com/rancher/local-path-provisioner/master/deploy/local-path-storage.yaml
+      environment:
+        KUBECONFIG: /root/.kube/config
+
+    - name: Сделать local-path StorageClass классом по умолчанию
+      shell: |
+        kubectl patch storageclass local-path -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
+      environment:
+        KUBECONFIG: /root/.kube/config
+
     - name: Проверить, существует ли kubeconfig
       stat:
         path: /root/.kube/config
