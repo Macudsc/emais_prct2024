@@ -170,7 +170,7 @@ pipeline {
                         """
                     }
 
-                    sh 'cat ~/.ssh/known_hosts | tail -n 2'
+                   //sh 'cat ~/.ssh/known_hosts | tail -n 2'
 
                     ansiblePlaybook(
                         playbook: 'ci_cd/Ansible/vm_setup.yml',

@@ -11,9 +11,12 @@
         update_cache: yes
         cache_valid_time: 3600
 
+    - name: Исправить поврежденные пакеты
+      command: dpkg --configure -a
+
     - name: Исправить проблемы с зависимостями
       apt:
-        upgrade: yes
+        upgrade: dist
         autoclean: yes
         autoremove: yes
 
