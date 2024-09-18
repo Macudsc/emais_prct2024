@@ -31,8 +31,20 @@
       args:
         chdir: /root/kubespray
 
+    - name: Проверить, существует ли kubeconfig
+      stat:
+        path: /root/.kube/config
+      register: kubeconfig_file
+
+    - name: Создать kubeconfig из admin.conf, если не существует
+      shell: |
+        mkdir -p /root/.kube
+        cp /etc/kubernetes/admin.conf /root/.kube/config
+      when: not kubeconfig_file.stat.exists
+
     - name: Скопировать kubeconfig на контроллер Jenkins
       fetch:
         src: /root/.kube/config
         dest: /tmp/kubeconfig
         flat: yes
+      when: kubeconfig_file.stat.exists
