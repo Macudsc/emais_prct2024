@@ -1,3 +1,4 @@
+# ci_cd/Terraform/variables.tf
 variable "folder_id" {}
 variable "cloud_id" {}
 variable "token" {}

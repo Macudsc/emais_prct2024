@@ -1,3 +1,4 @@
-cpu      = 2
-ram      = 2
+# ci_cd/Terraform/vars.tfvars
+cpu      = 4
+ram      = 4
 count_vm = 2

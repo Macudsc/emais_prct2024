@@ -4,7 +4,7 @@ pipeline {
   environment {
     DOCKER_CREDS = 'dockerhub-credentials-id'
     TG_BOT_TOKEN = credentials('telegram-bot-token')
-    KUBECONFIG_FILE = '/tmp/kubeconfig' // Путь к kubeconfig на Jenkins-node
+    KUBECONFIG_FILE = '/tmp/kubeconfig' // Путь к kubeconfig на Jenkins
   }
   stages {
     stage('Checkout github') {
@@ -17,29 +17,6 @@ pipeline {
         sh "echo \"tokenn='${TG_BOT_TOKEN}'\" >> Emais/sensetiv.py"
       }
     }
-    //===
-        stage('Deploy VMs with Terraform') {
-      steps {
-        dir('ci_cd/Terraform') {
-          script {
-            sh 'terraform init'
-            sh 'terraform apply -var-file=vars.tfvars -auto-approve'
-          }
-        }
-      }
-    }
-    stage('Fetch VM IPs') {
-      steps {
-        dir('ci_cd/Terraform') {
-          script {
-            def vmIps = sh(script: 'terraform output -json ip', returnStdout: true).trim()
-            env.VM_IPS = vmIps
-            echo "VM IP addresses: ${VM_IPS}"
-          }
-        }
-      }
-    }
-    //===
     stage('Deploy VM Setup') {
       steps {
         withCredentials([sshUserPrivateKey(credentialsId: 'vm-ssh-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {

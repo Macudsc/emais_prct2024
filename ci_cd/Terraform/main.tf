@@ -1,3 +1,4 @@
+# ci_cd/Terraform/main.tf
 # Определение кнфигурации самого терраформа. Указываются провайдеры, путь до бекенда (до хранения файла состояния). При локальном хранении tfstate не конфигурируем здесь.
 terraform {
   required_providers {
@@ -16,9 +17,9 @@ provider "yandex" {
   zone      = "ru-central1-a"
 }
 
-resource "yandex_compute_instance" "vm-1" {
+resource "yandex_compute_instance" "vm" {
   count       = var.count_vm
-  name        = "linux-vm-${count.index}"
+  name        = "k8s-node-${count.index + 1}"
   platform_id = "standard-v1"
 
   resources {
@@ -28,20 +29,46 @@ resource "yandex_compute_instance" "vm-1" {
 
   boot_disk {
     initialize_params {
-      image_id = "fd80d7fnvf399b1c207j" # ubuntu 20.04
+      image_id = "fd80d7fnvf399b1c207j" # Ubuntu 20.04
     }
   }
+
   network_interface {
     subnet_id = yandex_vpc_subnet.subnet-1.id
     nat       = true
   }
 
   metadata = {
-    #ssh-keys = "${var.name_user}:${var.ssh_key}"
-    # берем файл
     user-data = file("${path.module}/cloud-config")
+    role      = count.index == 0 ? "master" : "worker"
   }
 }
+#resource "yandex_compute_instance" "vm-1" {
+#  count       = var.count_vm
+#  name        = "linux-vm-${count.index}"
+#  platform_id = "standard-v1"
+
+#  resources {
+#    cores  = var.cpu
+#    memory = var.ram
+#  }
+
+#  boot_disk {
+#    initialize_params {
+#      image_id = "fd80d7fnvf399b1c207j" # ubuntu 20.04
+#    }
+#  }
+#  network_interface {
+#    subnet_id = yandex_vpc_subnet.subnet-1.id
+#    nat       = true
+#  }
+
+#  metadata = {
+#    #ssh-keys = "${var.name_user}:${var.ssh_key}"
+#    # берем файл
+#    user-data = file("${path.module}/cloud-config")
+#  }
+#}
 
 # Создаём сеть
 resource "yandex_vpc_network" "network-1" {
