@@ -47,12 +47,13 @@ pipeline {
             }
         }
     }
-
+    stage(''){
+      steps{
+        sh 'export PATH=$PATH:/home/jenkins/yandex-cloud/bin'
+      }
+    }
     stage('Check Existing Infrastructure') {
         steps {
-            sh '''
-              curl -sL https://storage.yandexcloud.net/yandexcloud-yc/install.sh | bash
-            '''
             script {
                 def networks = sh(script: 'yc vpc network list --format json', returnStdout: true).trim()
                 def subnets = sh(script: 'yc vpc subnet list --format json', returnStdout: true).trim()
@@ -98,9 +99,6 @@ pipeline {
 
     stage('Fetch VM IPs') {
             steps {
-                sh '''
-                  curl -sL https://storage.yandexcloud.net/yandexcloud-yc/install.sh | bash
-                '''
                 script {
                     if (env.INFRA_EXISTS == 'false') {
                         dir('ci_cd/Terraform') {
