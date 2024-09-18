@@ -47,21 +47,24 @@ pipeline {
             }
         }
     }
-    stage('Install yc CLI') {
+    stage('Install and Use yc CLI') {
         steps {
-            sh 'echo $USER'
             sh '''
             curl -sL https://storage.yandexcloud.net/yandexcloud-yc/install.sh | bash
             export PATH=$PATH:/home/jenkins/yandex-cloud/bin
+            echo "PATH=$PATH"
+            yc vpc network list --format json
+            yc vpc subnet list --format json
+            yc vpc address list --format json
             '''
         }
     }
     stage('Check Existing Infrastructure') {
         steps {
             script {
-                def networks = sh(script: 'yc vpc network list --format json', returnStdout: true).trim()
-                def subnets = sh(script: 'yc vpc subnet list --format json', returnStdout: true).trim()
-                def addresses = sh(script: 'yc vpc address list --format json', returnStdout: true).trim()
+                def networks = sh(script: 'export PATH=$PATH:/home/jenkins/yandex-cloud/bin && yc vpc network list --format json', returnStdout: true).trim()
+                def subnets = sh(script: 'export PATH=$PATH:/home/jenkins/yandex-cloud/bin && yc vpc subnet list --format json', returnStdout: true).trim()
+                def addresses = sh(script: 'export PATH=$PATH:/home/jenkins/yandex-cloud/bin && yc vpc address list --format json', returnStdout: true).trim()
 
                 if (networks || subnets || addresses) {
                     echo 'Existing infrastructure found. Skipping creation steps...'
