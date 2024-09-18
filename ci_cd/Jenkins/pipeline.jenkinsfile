@@ -1,15 +1,16 @@
 // ci_cd/Jenkins/pipeline.jenkinsfile
 pipeline {
-  agent any
-  environment {
-    DOCKER_CREDS = 'dockerhub-credentials-id'
-    TG_BOT_TOKEN = credentials('telegram-bot-token')
-    KUBECONFIG_FILE = '/tmp/kubeconfig' // Путь к kubeconfig на Jenkins-node
-    CLOUD_ID = credentials('yandex-cloud-id') // Jenkins credential для cloud_id
-    FOLDER_ID = credentials('yandex-folder-id') // Jenkins credential для folder_id
-    YC_TOKEN = credentials('yandex-token') // Jenkins credential для токена Яндекса
-    MASTER_IP = ""  // Заполнится значением из вывода Terraform
-    WORKER_IP = ""  // Заполнится значением из вывода Terraform
+    agent any
+    environment {
+        DOCKER_CREDS = 'dockerhub-credentials-id'
+        TG_BOT_TOKEN = credentials('telegram-bot-token')
+        KUBECONFIG_FILE = '/tmp/kubeconfig'
+        CLOUD_ID = credentials('yandex-cloud-id')
+        FOLDER_ID = credentials('yandex-folder-id')
+        YC_TOKEN = credentials('yandex-token')
+        //MASTER_IP = ""
+        //WORKER_IP = ""
+        PATH = "${env.PATH}:/home/jenkins/yandex-cloud/bin"  // Добавляем путь к yc CLI
   }
   stages {
     stage('Checkout github') {
@@ -105,8 +106,6 @@ pipeline {
     stage('Fetch VM IPs') {
         steps {
             script {
-                def masterIpFile = 'ci_cd/Terraform/master_ip.txt'
-                def workerIpFile = 'ci_cd/Terraform/worker_ip.txt'
                 def masterIp = ""
                 def workerIp = ""
 
@@ -115,49 +114,31 @@ pipeline {
                         masterIp = sh(script: 'terraform output -raw master_ip', returnStdout: true).trim()
                         workerIp = sh(script: 'terraform output -raw worker_ip', returnStdout: true).trim()
 
-                        writeFile(file: masterIpFile, text: masterIp)
-                        writeFile(file: workerIpFile, text: workerIp)
-
-                        sh "cat ${masterIpFile}"
-                        sh "cat ${workerIpFile}"
-
                         echo "Master IP from Terraform: ${masterIp}"
                         echo "Worker IP from Terraform: ${workerIp}"
                     }
                 } else {
-                    withEnv(["PATH+YC=/home/jenkins/yandex-cloud/bin"]) {
-                        def jsonOutput = sh(script: 'yc compute instance list --format json', returnStdout: true).trim()
-                        echo "JSON Output: ${jsonOutput}"
+                    def jsonOutput = sh(script: 'yc compute instance list --format json', returnStdout: true).trim()
+                    echo "JSON Output: ${jsonOutput}"
 
-                        masterIp = sh(script: """
-                            echo '${jsonOutput}' | jq -r '.[] | select(.name == "k8s-master-0") | .network_interfaces[0].primary_v4_address.one_to_one_nat.address'
-                        """, returnStdout: true).trim()
-                        workerIp = sh(script: """
-                            echo '${jsonOutput}' | jq -r '.[] | select(.name == "k8s-worker-0") | .network_interfaces[0].primary_v4_address.one_to_one_nat.address'
-                        """, returnStdout: true).trim()
+                    masterIp = sh(script: """
+                        echo '${jsonOutput}' | jq -r '.[] | select(.name == "k8s-master-0") | .network_interfaces[0].primary_v4_address.one_to_one_nat.address'
+                    """, returnStdout: true).trim()
+                    workerIp = sh(script: """
+                        echo '${jsonOutput}' | jq -r '.[] | select(.name == "k8s-worker-0") | .network_interfaces[0].primary_v4_address.one_to_one_nat.address'
+                    """, returnStdout: true).trim()
 
-                        writeFile(file: masterIpFile, text: masterIp)
-                        writeFile(file: workerIpFile, text: workerIp)
-
-                        sh "cat ${masterIpFile}"
-                        sh "cat ${workerIpFile}"
-
-                        echo "Master IP from YC CLI: ${masterIp}"
-                        echo "Worker IP from YC CLI: ${workerIp}"
-                        env.MASTER_IP = readFile(masterIpFile).trim()
-                        env.WORKER_IP = readFile(workerIpFile).trim()
-                    }
+                    echo "Master IP from YC CLI: ${masterIp}"
+                    echo "Worker IP from YC CLI: ${workerIp}"
                 }
 
-                // Проверяем существование файлов перед чтением
-                if (fileExists(masterIpFile) && fileExists(workerIpFile)) {
-                    //env.MASTER_IP = readFile(masterIpFile).trim()
-                    //env.WORKER_IP = readFile(workerIpFile).trim()
-                    echo "Existing Master IP from file: ${env.MASTER_IP}"
-                    echo "Existing Worker IP from file: ${env.WORKER_IP}"
-                } else {
-                    error "IP files not found. Check previous stages for errors."
-                }
+                // Устанавливаем переменные окружения
+                env.MASTER_IP = masterIp
+                env.WORKER_IP = workerIp
+
+                // Логируем IP-адреса
+                echo "Existing Master IP: ${env.MASTER_IP}"
+                echo "Existing Worker IP: ${env.WORKER_IP}"
             }
         }
     }
