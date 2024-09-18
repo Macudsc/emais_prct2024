@@ -5,4 +5,4 @@ users:
     shell: /bin/bash
     sudo: ['ALL=(ALL) NOPASSWD:ALL']  # Позволяет использовать sudo без пароля
     ssh-authorized-keys:
-      - {{ ssh_key }}  # Публичный SSH ключ
+      - {{ ssh_key }}
