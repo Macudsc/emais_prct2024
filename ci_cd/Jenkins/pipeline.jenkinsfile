@@ -8,8 +8,8 @@ pipeline {
         CLOUD_ID = credentials('yandex-cloud-id')
         FOLDER_ID = credentials('yandex-folder-id')
         YC_TOKEN = credentials('yandex-token')
-        MASTER_IP = ""
-        WORKER_IP = ""
+        //MASTER_IP = ""
+        //WORKER_IP = ""
         PATH = "${env.PATH}:/home/jenkins/yandex-cloud/bin"  // Добавляем путь к yc CLI
   }
   stages {
