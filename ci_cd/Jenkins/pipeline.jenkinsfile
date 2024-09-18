@@ -144,13 +144,15 @@ pipeline {
 
                         echo "Master IP from YC CLI: ${masterIp}"
                         echo "Worker IP from YC CLI: ${workerIp}"
+                        env.MASTER_IP = readFile(masterIpFile).trim()
+                        env.WORKER_IP = readFile(workerIpFile).trim()
                     }
                 }
 
                 // Проверяем существование файлов перед чтением
                 if (fileExists(masterIpFile) && fileExists(workerIpFile)) {
-                    env.MASTER_IP = readFile(masterIpFile).trim()
-                    env.WORKER_IP = readFile(workerIpFile).trim()
+                    //env.MASTER_IP = readFile(masterIpFile).trim()
+                    //env.WORKER_IP = readFile(workerIpFile).trim()
                     echo "Existing Master IP from file: ${env.MASTER_IP}"
                     echo "Existing Worker IP from file: ${env.WORKER_IP}"
                 } else {
