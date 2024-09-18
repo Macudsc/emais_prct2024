@@ -105,17 +105,19 @@ pipeline {
     stage('Fetch VM IPs') {
         steps {
             script {
-                def masterIpFile = 'master_ip.txt'
-                def workerIpFile = 'worker_ip.txt'
+                def masterIpFile = 'ci_cd/Terraform/master_ip.txt'
+                def workerIpFile = 'ci_cd/Terraform/worker_ip.txt'
                 
                 if (env.INFRA_EXISTS == 'false') {
                     dir('ci_cd/Terraform') {
                         def masterIp = sh(script: 'terraform output -raw master_ip', returnStdout: true).trim()
                         def workerIp = sh(script: 'terraform output -raw worker_ip', returnStdout: true).trim()
 
-                        // Проверяем, что файлы созданы
                         writeFile(file: masterIpFile, text: masterIp)
                         writeFile(file: workerIpFile, text: workerIp)
+
+                        sh "cat ${masterIpFile}"
+                        sh "cat ${workerIpFile}"
 
                         echo "Master IP: ${masterIp}, Worker IP: ${workerIp}"
                     }
@@ -133,6 +135,9 @@ pipeline {
 
                         writeFile(file: masterIpFile, text: masterIp)
                         writeFile(file: workerIpFile, text: workerIp)
+
+                        sh "cat ${masterIpFile}"
+                        sh "cat ${workerIpFile}"
 
                         echo "Master IP: ${masterIp}, Worker IP: ${workerIp}"
                     }
