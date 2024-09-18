@@ -3,6 +3,6 @@ users:
   - name: moon
     groups: wheel
     shell: /bin/bash
-    sudo: ['ALL=(ALL) NOPASSWD:ALL']  # Позволяет использовать sudo без пароля
+    sudo: ['ALL=(ALL) NOPASSWD:ALL']
     ssh-authorized-keys:
       - {{ ssh_key }}
