@@ -26,7 +26,6 @@ pipeline {
     stage('Generate creds.tfvars') {
       steps {
         script {
-          // Создание файла creds.tfvars с использованием креденшиалов от дженкинса
           sh """
           echo 'cloud_id  = "${CLOUD_ID}"' > ci_cd/Terraform/creds.tfvars
           echo 'folder_id = "${FOLDER_ID}"' >> ci_cd/Terraform/creds.tfvars
@@ -35,17 +34,31 @@ pipeline {
         }
       }
     }
+
     stage('Generate cloud-config') {
       steps {
         withCredentials([string(credentialsId: 'terraform-ssh-pubkey', variable: 'SSH_PUBKEY')]) {
           script {
-            // Считываем публичный ключ
             def sshPubKey = "${SSH_PUBKEY}".trim()
-
-            // Заменяем {{ ssh_key }} в cloud-config на публичный ключ
             sh """
               sed 's|{{ ssh_key }}|${sshPubKey}|' ci_cd/Terraform/cloud-config > ci_cd/Terraform/cloud-config-gen
             """
+          }
+        }
+      }
+    }
+
+    stage('Check and Destroy Terraform Infra') {
+      steps {
+        script {
+          dir('ci_cd/Terraform') {
+            def result = sh(script: 'terraform state list', returnStatus: true)
+            if (result == 0) {
+              echo 'Existing infrastructure found. Destroying...'
+              sh 'terraform destroy -var-file=creds.tfvars -var-file=vars.tfvars -auto-approve'
+            } else {
+              echo 'No existing infrastructure found.'
+            }
           }
         }
       }
@@ -76,11 +89,9 @@ pipeline {
       steps {
         dir('ci_cd/Terraform') {
           script {
-            // Получаем IP-адреса для master и worker
             def masterIp = sh(script: 'terraform output -raw master_ip', returnStdout: true).trim()
             def workerIp = sh(script: 'terraform output -raw worker_ip', returnStdout: true).trim()
             
-            // Устанавливаем переменные окружения
             env.MASTER_IP = masterIp
             env.WORKER_IP = workerIp
 
