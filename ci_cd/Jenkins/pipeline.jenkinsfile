@@ -39,8 +39,9 @@ pipeline {
       steps {
         withCredentials([sshUserPrivateKey(credentialsId: 'vm-ssh-key', keyFileVariable: 'SSH_KEY')]) {
           script {
-            // Вставляем SSH ключ в cloud-config
             sh "ls -la ci_cd/Terraform/"
+            
+            // Вставляем SSH ключ в cloud-config
             sh """
               sed 's|{{ ssh_key }}|$(cat ${SSH_KEY})|' ci_cd/Terraform/cloud-config > ci_cd/Terraform/cloud-config-gen
             """
