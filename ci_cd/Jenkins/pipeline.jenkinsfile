@@ -117,17 +117,17 @@ pipeline {
                     }
                 } else {
                     withEnv(["PATH+YC=/home/jenkins/yandex-cloud/bin"]) {
-                        // Получаем полный JSON от yc compute instance list
+                        // Получаем JSON
                         def jsonOutput = sh(script: 'yc compute instance list --format json', returnStdout: true).trim()
                         echo "JSON Output: ${jsonOutput}"
 
-                        // Выбираем IP для master
+                        // IP для master
                         def masterIp = sh(script: """
                             echo '${jsonOutput}' | jq -r '.[] | select(.name == "k8s-master-0") | .network_interfaces[].primary_v4_address.one_to_one_nat.address'
                         """, returnStdout: true).trim()
                         echo "Master IP: ${masterIp}"
 
-                        // Выбираем IP для worker
+                        // IP для worker
                         def workerIp = sh(script: """
                             echo '${jsonOutput}' | jq -r '.[] | select(.name == "k8s-worker-0") | .network_interfaces[].primary_v4_address.one_to_one_nat.address'
                         """, returnStdout: true).trim()
