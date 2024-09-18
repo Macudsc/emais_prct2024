@@ -18,6 +18,21 @@ pipeline{
             }
           }
         }
+        stage('Generate cloud-config') {
+          steps {
+            withCredentials([string(credentialsId: 'terraform-ssh-pubkey', variable: 'SSH_PUBKEY')]) {
+              script {
+                // Считываем публичный ключ
+                def sshPubKey = "${SSH_PUBKEY}".trim()
+
+                // Заменяем {{ ssh_key }} в cloud-config на публичный ключ
+                sh """
+                  sed 's|{{ ssh_key }}|${sshPubKey}|' ci_cd/Terraform/cloud-config > ci_cd/Terraform/cloud-config-gen
+                """
+              }
+            }
+          }
+        }
         stage('Destroy terraform infra') {
           steps {
             script {
