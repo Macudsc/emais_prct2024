@@ -143,7 +143,7 @@ pipeline {
                 env.MASTER_IP = readFile('master_ip.txt').trim()
                 env.WORKER_IP = readFile('worker_ip.txt').trim()
 
-                echo "Existing Master IP: ${env.MASTER_IP}, Existing Worker IP: ${env.WORKER_IP}"
+                echo "Existing Master IP: ${MASTER_IP}, Existing Worker IP: ${WORKER_IP}"
             }
         }
     }
