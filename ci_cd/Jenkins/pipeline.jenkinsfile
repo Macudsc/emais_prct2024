@@ -134,8 +134,10 @@ pipeline {
                         echo "Worker IP: ${workerIp}"
 
                         // Устанавливаем переменные окружения через env
-                        env.MASTER_IP = masterIp
-                        env.WORKER_IP = workerIp
+                        script {
+                            env.MASTER_IP = masterIp
+                            env.WORKER_IP = workerIp
+                        }
 
                         echo "Existing Master IP: ${env.MASTER_IP}, Existing Worker IP: ${env.WORKER_IP}"
                     }
