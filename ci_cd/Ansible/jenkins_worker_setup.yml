@@ -1,0 +1,17 @@
+---
+- hosts: all
+  tasks:
+    - name: Установка докер
+      apt:
+        name:
+          - curl
+    
+    - name: Установить kubectl
+      shell: hostname
+
+    - name: Установить Terraform
+      shell: hostname
+
+
+    - name: Настроить Terraform ya.cloud registry
+      shell: hostname 
