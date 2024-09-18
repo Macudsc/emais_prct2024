@@ -1,0 +1,22 @@
+pipeline{
+    agent any
+    environment {
+      CLOUD_ID = credentials('yandex-cloud-id') // Jenkins credential для cloud_id
+      FOLDER_ID = credentials('yandex-folder-id') // Jenkins credential для folder_id
+      YC_TOKEN = credentials('yandex-token') // Jenkins credential для токена Яндекса
+    }
+    stages{
+        stage('Destroy terraform infra') {
+          steps {
+            script {
+              sh 'terraform destroy -var-file=creds.tfvars -var-file=vars.tfvars -auto-approve'
+            }
+          }
+        }
+    }
+    post{
+      always {
+        cleanWs()
+      }
+    }
+}
