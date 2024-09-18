@@ -64,10 +64,14 @@ pipeline {
       steps {
         dir('ci_cd/Terraform') {
           script {
-            def vmIps = sh(script: 'terraform output -json ip', returnStdout: true).trim()
-            def ipList = readJSON(text: vmIps)
-            env.MASTER_IP = ipList['master_ip']
-            env.WORKER_IP = ipList['worker_ip']
+            // Получаем IP-адреса для master и worker
+            def masterIp = sh(script: 'terraform output -raw master_ip', returnStdout: true).trim()
+            def workerIp = sh(script: 'terraform output -raw worker_ip', returnStdout: true).trim()
+            
+            // Устанавливаем переменные окружения
+            env.MASTER_IP = masterIp
+            env.WORKER_IP = workerIp
+
             echo "Master IP: ${MASTER_IP}, Worker IP: ${WORKER_IP}"
           }
         }
