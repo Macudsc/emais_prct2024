@@ -1,0 +1,8 @@
+#cloud-config
+users:
+  - name: root
+    groups: wheel
+    shell: /bin/bash
+    sudo: ['ALL=(ALL) NOPASSWD:ALL'] # спокойно использовать sudo
+    ssh-authorized-keys:
+      - 

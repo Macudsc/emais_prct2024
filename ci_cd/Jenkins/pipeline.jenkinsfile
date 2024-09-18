@@ -52,6 +52,22 @@ pipeline {
         }
       }
     }
+    stage('Fetch and Replace kubeconfig') {
+      steps {
+        withCredentials([sshUserPrivateKey(credentialsId: 'vm-ssh-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
+          script {
+            // Скопировать kubeconfig на Jenkins-ноду
+            sh """
+              scp -i /tmp/.ssh/id_rsa ${SSH_USER}@${params.VM_IP}:/root/.kube/config /tmp/kubeconfig
+            """
+            // Заменить адрес в kubeconfig
+            sh """
+              sed -i 's|https://127.0.0.1:6443|https://${params.VM_IP}:6443|g' /tmp/kubeconfig
+            """
+          }
+        }
+      }
+    }
     stage('Deploy to K8s') {
       steps {
         script {
