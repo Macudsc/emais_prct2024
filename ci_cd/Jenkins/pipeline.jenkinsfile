@@ -131,31 +131,19 @@ pipeline {
                 def masterIp = ""
                 def workerIp = ""
 
-                if (env.INFRA_EXISTS == 'false') {
-                    dir('ci_cd/Terraform') {
-                        def terraformOutput = sh(script: 'terraform output -json', returnStdout: true).trim()
-                        def parsedOutput = readJSON(text: terraformOutput)
+                def jsonOutput = sh(script: 'yc compute instance list --format json', returnStdout: true).trim()
+                echo "JSON Output: ${jsonOutput}"
 
-                        masterIp = parsedOutput.master_ip.value[0]
-                        workerIp = parsedOutput.worker_ip.value[0]
+                masterIp = sh(script: """
+                    echo '${jsonOutput}' | jq -r '.[] | select(.name | startswith("k8s-master-")) | .network_interfaces[0].primary_v4_address.one_to_one_nat.address'
+                """, returnStdout: true).trim()
+                
+                workerIp = sh(script: """
+                    echo '${jsonOutput}' | jq -r '.[] | select(.name | startswith("k8s-worker-")) | .network_interfaces[0].primary_v4_address.one_to_one_nat.address'
+                """, returnStdout: true).trim()
 
-                        echo "Master IP from Terraform: ${masterIp}"
-                        echo "Worker IP from Terraform: ${workerIp}"
-                    }
-                } else {
-                    def jsonOutput = sh(script: 'yc compute instance list --format json', returnStdout: true).trim()
-                    echo "JSON Output: ${jsonOutput}"
-
-                    masterIp = sh(script: """
-                        echo '${jsonOutput}' | jq -r '.[] | select(.name == "k8s-master-0") | .network_interfaces[0].primary_v4_address.one_to_one_nat.address'
-                    """, returnStdout: true).trim()
-                    workerIp = sh(script: """
-                        echo '${jsonOutput}' | jq -r '.[] | select(.name == "k8s-worker-0") | .network_interfaces[0].primary_v4_address.one_to_one_nat.address'
-                    """, returnStdout: true).trim()
-
-                    echo "Master IP from YC CLI: ${masterIp}"
-                    echo "Worker IP from YC CLI: ${workerIp}"
-                }
+                echo "Master IP from YC CLI: ${masterIp}"
+                echo "Worker IP from YC CLI: ${workerIp}"
 
                 // Устанавливаем переменные окружения с IP-адресами
                 env.MASTER_IP = masterIp
