@@ -46,6 +46,7 @@ pipeline {
                     sh "cat ci_cd/Terraform/cloud-config"
                     echo "genka"
                     sh "cat ci_cd/Terraform/cloud-config-gen"
+                    sh "mv ci_cd/Terraform/cloud-config-gen ci_cd/Terraform/cloud-config"
                 }
             }
         }
