@@ -24,82 +24,101 @@ pipeline {
     }
     //===
     stage('Generate creds.tfvars') {
-      steps {
-        script {
-          sh """
-          echo 'cloud_id  = "${CLOUD_ID}"' > ci_cd/Terraform/creds.tfvars
-          echo 'folder_id = "${FOLDER_ID}"' >> ci_cd/Terraform/creds.tfvars
-          echo 'token     = "${YC_TOKEN}"' >> ci_cd/Terraform/creds.tfvars
-          """
+        steps {
+            script {
+                sh """
+                echo 'cloud_id  = "${CLOUD_ID}"' > ci_cd/Terraform/creds.tfvars
+                echo 'folder_id = "${FOLDER_ID}"' >> ci_cd/Terraform/creds.tfvars
+                echo 'token     = "${YC_TOKEN}"' >> ci_cd/Terraform/creds.tfvars
+                """
+            }
         }
-      }
     }
 
     stage('Generate cloud-config') {
-      steps {
-        withCredentials([string(credentialsId: 'terraform-ssh-pubkey', variable: 'SSH_PUBKEY')]) {
-          script {
-            def sshPubKey = "${SSH_PUBKEY}".trim()
-            sh """
-              sed 's|{{ ssh_key }}|${sshPubKey}|' ci_cd/Terraform/cloud-config > ci_cd/Terraform/cloud-config-gen
-            """
-          }
+        steps {
+            withCredentials([string(credentialsId: 'terraform-ssh-pubkey', variable: 'SSH_PUBKEY')]) {
+                script {
+                    def sshPubKey = "${SSH_PUBKEY}".trim()
+                    sh """
+                      sed 's|{{ ssh_key }}|${sshPubKey}|' ci_cd/Terraform/cloud-config > ci_cd/Terraform/cloud-config-gen
+                    """
+                }
+            }
         }
-      }
     }
 
-    stage('Check and Destroy Terraform Infra') {
-      steps {
-        script {
-          dir('ci_cd/Terraform') {
-            def result = sh(script: 'terraform state list', returnStatus: true)
-            if (result == 0) {
-              echo 'Existing infrastructure found. Destroying...'
-              sh 'terraform destroy -var-file=creds.tfvars -var-file=vars.tfvars -auto-approve'
-            } else {
-              echo 'No existing infrastructure found.'
+    stage('Check Existing Infrastructure') {
+        steps {
+            script {
+                def networks = sh(script: 'yc vpc network list --format json', returnStdout: true).trim()
+                def subnets = sh(script: 'yc vpc subnet list --format json', returnStdout: true).trim()
+                def addresses = sh(script: 'yc vpc address list --format json', returnStdout: true).trim()
+
+                if (networks || subnets || addresses) {
+                    echo 'Existing infrastructure found. Skipping creation steps...'
+                    env.INFRA_EXISTS = 'true'
+                } else {
+                    echo 'No existing infrastructure found. Proceeding with creation...'
+                    env.INFRA_EXISTS = 'false'
+                }
             }
-          }
         }
-      }
     }
 
     stage('Plan Infrastructure') {
-      steps {
-        script {
-          dir('ci_cd/Terraform') {
-            sh 'terraform init'
-            sh 'terraform plan -var-file="vars.tfvars" -var-file="creds.tfvars" -out=tfplan'
-          }
+        when {
+            expression { return env.INFRA_EXISTS == 'false' }
         }
-      }
+        steps {
+            script {
+                dir('ci_cd/Terraform') {
+                    sh 'terraform init'
+                    sh 'terraform plan -var-file="vars.tfvars" -var-file="creds.tfvars" -out=tfplan'
+                }
+            }
+        }
     }
 
     stage('Apply Infrastructure') {
-      steps {
-        script {
-          dir('ci_cd/Terraform') {
-            sh 'terraform apply -auto-approve tfplan'
-          }
+        when {
+            expression { return env.INFRA_EXISTS == 'false' }
         }
-      }
+        steps {
+            script {
+                dir('ci_cd/Terraform') {
+                    sh 'terraform apply -auto-approve tfplan'
+                }
+            }
+        }
     }
 
     stage('Fetch VM IPs') {
-      steps {
-        dir('ci_cd/Terraform') {
-          script {
-            def masterIp = sh(script: 'terraform output -raw master_ip', returnStdout: true).trim()
-            def workerIp = sh(script: 'terraform output -raw worker_ip', returnStdout: true).trim()
-            
-            env.MASTER_IP = masterIp
-            env.WORKER_IP = workerIp
+            steps {
+                script {
+                    if (env.INFRA_EXISTS == 'false') {
+                        dir('ci_cd/Terraform') {
+                            def masterIp = sh(script: 'terraform output -raw master_ip', returnStdout: true).trim()
+                            def workerIp = sh(script: 'terraform output -raw worker_ip', returnStdout: true).trim()
 
-            echo "Master IP: ${MASTER_IP}, Worker IP: ${WORKER_IP}"
-          }
+                            env.MASTER_IP = masterIp
+                            env.WORKER_IP = workerIp
+
+                            echo "Master IP: ${MASTER_IP}, Worker IP: ${WORKER_IP}"
+                        }
+                    } else {
+                        // Если инфраструктура существует, получаем IP из существующих ресурсов
+                        def masterIp = sh(script: 'yc compute instance list --format json | jq -r \'.[0].network_interfaces[0].ip_addresses[0]\'', returnStdout: true).trim()
+                        def workerIp = sh(script: 'yc compute instance list --format json | jq -r \'.[1].network_interfaces[0].ip_addresses[0]\'', returnStdout: true).trim()
+
+                        env.MASTER_IP = masterIp
+                        env.WORKER_IP = workerIp
+
+                        echo "Existing Master IP: ${MASTER_IP}, Existing Worker IP: ${WORKER_IP}"
+                    }
+                }
+            }
         }
-      }
-    }
     //===
 
     stage('Deploy VM Setup') {
