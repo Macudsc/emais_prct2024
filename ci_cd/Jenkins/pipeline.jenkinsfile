@@ -34,7 +34,7 @@ pipeline {
         }
       }
     }
-
+    // Стадия создания клауд-конфига
     stage('Generate cloud-config') {
         steps {
             withCredentials([string(credentialsId: 'terraform-ssh-pubkey', variable: 'SSH_PUBKEY')]) {
@@ -43,6 +43,9 @@ pipeline {
                     sh """
                       sed 's|{{ ssh_key }}|${sshPubKey}|' ci_cd/Terraform/cloud-config > ci_cd/Terraform/cloud-config-gen
                     """
+                    sh "cat ci_cd/Terraform/cloud-config"
+                    echo "genka"
+                    sh "cat ci_cd/Terraform/cloud-config-gen"
                 }
             }
         }
@@ -132,7 +135,7 @@ pipeline {
                 def workerIp = ""
 
                 def jsonOutput = sh(script: 'yc compute instance list --format json', returnStdout: true).trim()
-                echo "JSON Output: ${jsonOutput}"
+                //echo "JSON Output: ${jsonOutput}"
 
                 masterIp = sh(script: """
                     echo '${jsonOutput}' | jq -r '.[] | select(.name | startswith("k8s-master-")) | .network_interfaces[0].primary_v4_address.one_to_one_nat.address'
@@ -157,6 +160,7 @@ pipeline {
     }
     //===
 
+    // Стадия запуска плейбука на виртуалках
     stage('Deploy VM Setup') {
         steps {
             withCredentials([sshUserPrivateKey(credentialsId: 'vm-ssh-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
@@ -166,11 +170,13 @@ pipeline {
                         ssh-keyscan -H ${MASTER_IP} >> ~/.ssh/known_hosts
                         ssh-keyscan -H ${WORKER_IP} >> ~/.ssh/known_hosts
                     """
-                    sh 'cat ~/.ssh/known_hosts'
+                    sh 'cat ~/.ssh/known_hosts | tail'
+
                     ansiblePlaybook(
                         playbook: 'ci_cd/Ansible/vm_setup.yml',
                         inventory: "${MASTER_IP},${WORKER_IP},",
-                        extras: "-e ansible_user=${SSH_USER} -e ansible_ssh_private_key_file=${SSH_KEY}"
+                        extras: '-e ansible_user=$SSH_USER -e ansible_ssh_private_key_file=$SSH_KEY',
+                        colorized: true
                     )
                 }
             }
