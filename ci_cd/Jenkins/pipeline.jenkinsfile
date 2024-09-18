@@ -125,10 +125,10 @@ pipeline {
                         echo "JSON Output: ${jsonOutput}"
 
                         def masterIp = sh(script: """
-                            echo '${jsonOutput}' | jq -r '.[] | select(.name == "k8s-master-0") | .network_interfaces[].primary_v4_address.one_to_one_nat.address'
+                            echo '${jsonOutput}' | jq -r '.[] | select(.name == "k8s-master-0") | .network_interfaces[0].primary_v4_address.one_to_one_nat.address'
                         """, returnStdout: true).trim()
                         def workerIp = sh(script: """
-                            echo '${jsonOutput}' | jq -r '.[] | select(.name == "k8s-worker-0") | .network_interfaces[].primary_v4_address.one_to_one_nat.address'
+                            echo '${jsonOutput}' | jq -r '.[] | select(.name == "k8s-worker-0") | .network_interfaces[0].primary_v4_address.one_to_one_nat.address'
                         """, returnStdout: true).trim()
 
                         writeFile(file: masterIpFile, text: masterIp)
@@ -138,13 +138,14 @@ pipeline {
                     }
                 }
 
-                // Убедитесь, что файлы существуют перед чтением
-                if (fileExists(masterIpFile) && fileExists(workerIpFile)) {
-                    env.MASTER_IP = readFile(masterIpFile).trim()
-                    env.WORKER_IP = readFile(workerIpFile).trim()
-                    echo "Existing Master IP: ${env.MASTER_IP}, Existing Worker IP: ${env.WORKER_IP}"
-                } else {
-                    error "IP files not found. Check previous stages for errors."
+                dir('ci_cd/Terraform') {
+                    if (fileExists(masterIpFile) && fileExists(workerIpFile)) {
+                        env.MASTER_IP = readFile(masterIpFile).trim()
+                        env.WORKER_IP = readFile(workerIpFile).trim()
+                        echo "Existing Master IP: ${env.MASTER_IP}, Existing Worker IP: ${env.WORKER_IP}"
+                    } else {
+                        error "IP files not found. Check previous stages for errors."
+                    }
                 }
             }
         }
