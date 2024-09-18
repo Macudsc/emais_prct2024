@@ -168,9 +168,11 @@ pipeline {
                     // Добавляем ключи хостов
                     sh """
                         ssh-keyscan -H ${MASTER_IP} >> ~/.ssh/known_hosts
+                        sleep 2
                         ssh-keyscan -H ${WORKER_IP} >> ~/.ssh/known_hosts
+                        sleep 2
                     """
-                    sh 'cat ~/.ssh/known_hosts | tail'
+                    sh 'cat ~/.ssh/known_hosts | tail -n 2'
 
                     ansiblePlaybook(
                         playbook: 'ci_cd/Ansible/vm_setup.yml',
