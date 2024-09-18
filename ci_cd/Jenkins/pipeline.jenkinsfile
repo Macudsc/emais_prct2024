@@ -37,16 +37,14 @@ pipeline {
     }
     stage('Generate cloud-config') {
       steps {
-        withCredentials([sshUserPrivateKey(credentialsId: 'vm-ssh-key', keyFileVariable: 'SSH_KEY')]) {
+        withCredentials([sshUserPrivateKey(credentialsId: 'terraform-ssh-pubkey', keyFileVariable: 'SSH_PUBKEY')]) {
           script {
-            sh "ls -la ci_cd/Terraform/"
+            // Считываем публичный ключ в переменную
+            def sshPubKey = sh(script: "cat ${SSH_PUBKEY}", returnStdout: true).trim()
 
-            // Считываем SSH ключ в переменную
-            def sshKey = sh(script: "cat ${SSH_KEY}", returnStdout: true).trim()
-
-            // Заменяем ssh_key в cloud-config на реальный SSH ключ
+            // Заменяем {{ ssh_key }} в cloud-config на реальный публичный SSH ключ
             sh """
-              sed 's|{{ ssh_key }}|${sshKey}|' ci_cd/Terraform/cloud-config > ci_cd/Terraform/cloud-config-gen
+              sed 's|{{ ssh_key }}|${sshPubKey}|' ci_cd/Terraform/cloud-config > ci_cd/Terraform/cloud-config-gen
             """
           }
         }
