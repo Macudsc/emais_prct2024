@@ -110,10 +110,10 @@ pipeline {
                         def masterIp = sh(script: 'terraform output -raw master_ip', returnStdout: true).trim()
                         def workerIp = sh(script: 'terraform output -raw worker_ip', returnStdout: true).trim()
 
-                        env.MASTER_IP = masterIp
-                        env.WORKER_IP = workerIp
+                        writeFile(file: 'master_ip.txt', text: masterIp)
+                        writeFile(file: 'worker_ip.txt', text: workerIp)
 
-                        echo "Master IP: ${env.MASTER_IP}, Worker IP: ${env.WORKER_IP}"
+                        echo "Master IP: ${masterIp}, Worker IP: ${workerIp}"
                     }
                 } else {
                     withEnv(["PATH+YC=/home/jenkins/yandex-cloud/bin"]) {
@@ -133,15 +133,17 @@ pipeline {
                         """, returnStdout: true).trim()
                         echo "Worker IP: ${workerIp}"
 
-                        // Устанавливаем переменные окружения через env
-                        script {
-                            env.MASTER_IP = masterIp
-                            env.WORKER_IP = workerIp
-                        }
-
-                        echo "Existing Master IP: ${env.MASTER_IP}, Existing Worker IP: ${env.WORKER_IP}"
+                        // Сохраняем IP в файлы
+                        writeFile(file: 'master_ip.txt', text: masterIp)
+                        writeFile(file: 'worker_ip.txt', text: workerIp)
                     }
                 }
+
+                // Чтение IP из файлов
+                env.MASTER_IP = readFile('master_ip.txt').trim()
+                env.WORKER_IP = readFile('worker_ip.txt').trim()
+
+                echo "Existing Master IP: ${env.MASTER_IP}, Existing Worker IP: ${env.WORKER_IP}"
             }
         }
     }
