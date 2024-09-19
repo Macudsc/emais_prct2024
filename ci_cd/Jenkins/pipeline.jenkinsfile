@@ -175,20 +175,20 @@ pipeline {
             }
         }
     }
-    // Стадия для подготовки Кубспрея
-    stage('Prepare Kubespray') {
-        steps {
-            withCredentials([sshUserPrivateKey(credentialsId: 'jenkins-node-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER'), sshUserPrivateKey(credentialsId: 'vm-ssh-key', keyFileVariable: 'VM_SSH_KEY', usernameVariable: 'VM_SSH_USER')]) {
-                script {
-                    ansiblePlaybook(
-                        playbook: 'ci_cd/Ansible/kubespray_setup.yml',
-                        inventory: "localhost",
-                        extras: "-e ansible_user=${SSH_USER} -e ansible_ssh_private_key_file=${SSH_KEY} -e master_ip=${MASTER_IP} -e worker_ip=${WORKER_IP} -e vm_ssh_user=${VM_SSH_USER} -e vm_ssh_key=${VM_SSH_KEY}"
-                    )
-                }
-            }
-        }
-    }
+    //// Стадия для подготовки Кубспрея
+    //stage('Prepare Kubespray') {
+    //    steps {
+    //        withCredentials([sshUserPrivateKey(credentialsId: 'jenkins-node-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER'), sshUserPrivateKey(credentialsId: 'vm-ssh-key', keyFileVariable: 'VM_SSH_KEY', usernameVariable: 'VM_SSH_USER')]) {
+    //            script {
+    //                ansiblePlaybook(
+    //                    playbook: 'ci_cd/Ansible/kubespray_setup.yml',
+    //                    inventory: "localhost",
+    //                    extras: "-e ansible_user=${SSH_USER} -e ansible_ssh_private_key_file=${SSH_KEY} -e master_ip=${MASTER_IP} -e worker_ip=${WORKER_IP} -e vm_ssh_user=${VM_SSH_USER} -e vm_ssh_key=${VM_SSH_KEY}"
+    //                )
+    //            }
+    //        }
+    //    }
+    //}
 
     //// Стадия для запуска настройки кластера
     //stage('Configure Kubernetes Cluster') {
@@ -208,50 +208,50 @@ pipeline {
     //    }
     //}
 
-    stage('Configure StorageClass') {
-        steps {
-            withCredentials([sshUserPrivateKey(credentialsId: 'vm-ssh-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
-                script {
-                    ansiblePlaybook(
-                        playbook: 'ci_cd/Ansible/kubespray_setup.yml',
-                        inventory: "${MASTER_IP},${WORKER_IP}",
-                        extras: "--become -e ansible_user=${SSH_USER} -e ansible_ssh_private_key_file=${SSH_KEY}"
-                    )
-                }
-            }
-        }
-    }
+    //stage('Configure StorageClass') {
+    //    steps {
+    //        withCredentials([sshUserPrivateKey(credentialsId: 'vm-ssh-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
+    //            script {
+    //                ansiblePlaybook(
+    //                    playbook: 'ci_cd/Ansible/kubespray_setup.yml',
+    //                    inventory: "${MASTER_IP},${WORKER_IP}",
+    //                    extras: "--become -e ansible_user=${SSH_USER} -e ansible_ssh_private_key_file=${SSH_KEY}"
+    //                )
+    //            }
+    //        }
+    //    }
+    //}
 
-    stage('Fetch and Replace kubeconfig') {
-        steps {
-            withCredentials([sshUserPrivateKey(credentialsId: 'vm-ssh-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
-                script {
-                    sh """
-                        scp -i ${SSH_KEY} ${SSH_USER}@${MASTER_IP}:/home/moon/.kube/config /tmp/kubeconfig
-                    """
-                    sh """
-                        sed -i 's|https://127.0.0.1:6443|https://${MASTER_IP}:6443|g' /tmp/kubeconfig
-                    """
-                }
-            }
-        }
-    }
+    //stage('Fetch and Replace kubeconfig') {
+    //    steps {
+    //        withCredentials([sshUserPrivateKey(credentialsId: 'vm-ssh-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
+    //            script {
+    //                sh """
+    //                    scp -i ${SSH_KEY} ${SSH_USER}@${MASTER_IP}:/home/moon/.kube/config /tmp/kubeconfig
+    //                """
+    //                sh """
+    //                    sed -i 's|https://127.0.0.1:6443|https://${MASTER_IP}:6443|g' /tmp/kubeconfig
+    //                """
+    //            }
+    //        }
+    //    }
+    //}
 
-    //===
-    stage('Deploy to K8s') {
-      steps {
-        script {
-          sh 'curl -LO "https://storage.googleapis.com/kubernetes-release/release/v1.20.5/bin/linux/amd64/kubectl"'
-          sh 'chmod u+x ./kubectl'  
-          sh "./kubectl --kubeconfig=${KUBECONFIG_FILE} apply -f ci_cd/K8s/namespace.yml"
-          sh "./kubectl --kubeconfig=${KUBECONFIG_FILE} apply -f ci_cd/K8s/postgres-pvc.yml"
-          sh "./kubectl --kubeconfig=${KUBECONFIG_FILE} apply -f ci_cd/K8s/postgres-deployment.yml"
-          sh "./kubectl --kubeconfig=${KUBECONFIG_FILE} apply -f ci_cd/K8s/mongo-pvc.yml"
-          sh "./kubectl --kubeconfig=${KUBECONFIG_FILE} apply -f ci_cd/K8s/mongo-deployment.yml"
-          sh "./kubectl --kubeconfig=${KUBECONFIG_FILE} apply -f ci_cd/K8s/app-deployment.yml"
-        }
-      }
-    }
+    ////===
+    //stage('Deploy to K8s') {
+    //  steps {
+    //    script {
+    //      sh 'curl -LO "https://storage.googleapis.com/kubernetes-release/release/v1.20.5/bin/linux/amd64/kubectl"'
+    //      sh 'chmod u+x ./kubectl'  
+    //      sh "./kubectl --kubeconfig=${KUBECONFIG_FILE} apply -f ci_cd/K8s/namespace.yml"
+    //      sh "./kubectl --kubeconfig=${KUBECONFIG_FILE} apply -f ci_cd/K8s/postgres-pvc.yml"
+    //      sh "./kubectl --kubeconfig=${KUBECONFIG_FILE} apply -f ci_cd/K8s/postgres-deployment.yml"
+    //      sh "./kubectl --kubeconfig=${KUBECONFIG_FILE} apply -f ci_cd/K8s/mongo-pvc.yml"
+    //      sh "./kubectl --kubeconfig=${KUBECONFIG_FILE} apply -f ci_cd/K8s/mongo-deployment.yml"
+    //      sh "./kubectl --kubeconfig=${KUBECONFIG_FILE} apply -f ci_cd/K8s/app-deployment.yml"
+    //    }
+    //  }
+    //}
 
     //stage('Build Docker Image PIPELINE') {
     //  steps {
