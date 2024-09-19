@@ -1,7 +1,7 @@
 ---
 # ci_cd/Ansible/kubespray_setup.yml
 - hosts: localhost
-  become: true  # Добавлено для выполнения задач с повышением привилегий
+  become: true
   tasks:
     - name: Клонировать репозиторий Kubespray на Jenkins воркере
       git:
