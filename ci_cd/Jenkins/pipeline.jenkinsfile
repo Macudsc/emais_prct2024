@@ -38,16 +38,9 @@ pipeline {
             withCredentials([string(credentialsId: 'terraform-ssh-pubkey', variable: 'SSH_PUBKEY')]) {
                 script {
                     def sshPubKey = "${SSH_PUBKEY}".trim()
-                    //echo "Публичный ключ: ${sshPubKey}"
-
                     sh """
                       sed 's|{{ ssh_key }}|${sshPubKey}|' ci_cd/Terraform/cloud-config > ci_cd/Terraform/cloud-config-gen
                     """
-                    //echo "Исходный cloud-config:"
-                    //sh "cat ci_cd/Terraform/cloud-config"
-                    
-                    //echo "Сгенерированный cloud-config:"
-                    //sh "cat ci_cd/Terraform/cloud-config-gen"
                     sh "mv ci_cd/Terraform/cloud-config-gen ci_cd/Terraform/cloud-config"
                 }
             }

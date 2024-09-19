@@ -3,30 +3,31 @@
   become: true
   tasks:
     - name: Проверка системы
-      shell: hostname && pwd && whoami
+      shell: whoami
 
     - name: Обновить индекс пакетов
       apt:
         update_cache: yes
         cache_valid_time: 3600
 
-    - name: Удалить проблемные пакеты NVIDIA вручную
-      shell: |
-        dpkg --remove --force-remove-reinstreq nvidia-container-toolkit nvidia-docker2 nvidia-firmware-535-535.183.01 nvidia-kernel-source-510 nvidia-kernel-source-535 nvidia-modprobe nvidia-prime nvidia-settings
-      ignore_errors: yes
+    #- name: Удалить проблемные пакеты NVIDIA вручную
+    #  shell: |
+    #    dpkg --remove --force-remove-reinstreq nvidia-container-toolkit nvidia-docker2 nvidia-firmware-535-535.183.01 nvidia-kernel-source-510 nvidia-kernel-source-535 nvidia-modprobe nvidia-prime nvidia-settings
+    #  ignore_errors: yes
 
-    - name: Исправить сломанные зависимости (после удаления)
-      shell: apt --fix-broken install -y
-      ignore_errors: yes
+    #- name: Исправить сломанные зависимости (после удаления)
+    #  shell: apt --fix-broken install -y
+    #  ignore_errors: yes
 
-    - name: Обновить систему (dist-upgrade)
+    - name: Обновить систему
       apt:
-        upgrade: dist
+        upgrade: yes
+        autoclean: yes
         autoremove: yes
       ignore_errors: yes
 
-    - name: Заблокировать пакеты NVIDIA от обновления
-      shell: apt-mark hold 'nvidia-*'
+    #- name: Заблокировать пакеты NVIDIA от обновления
+    #  shell: apt-mark hold 'nvidia-*'
 
     - name: Установить необходимые пакеты
       apt:
