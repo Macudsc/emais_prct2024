@@ -182,7 +182,7 @@ pipeline {
                     ansiblePlaybook(
                         playbook: 'ci_cd/Ansible/kubespray_setup.yml',
                         inventory: "localhost",
-                        extras: "--become -e ansible_user=${SSH_USER} -e ansible_ssh_private_key_file=${SSH_KEY}"
+                        extras: "--become --become-user=jenkins -e ansible_user=${SSH_USER} -e ansible_ssh_private_key_file=${SSH_KEY}"
                     )
                 }
             }
@@ -194,9 +194,9 @@ pipeline {
             withCredentials([sshUserPrivateKey(credentialsId: 'vm-ssh-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
                 script {
                     ansiblePlaybook(
-                        playbook: 'ci_cd/Ansible/configure_storageclass.yml',
-                        inventory: "inventory/mycluster/hosts.yml",
-                        extras: "-e ansible_user=$SSH_USER -e ansible_ssh_private_key_file=${SSH_KEY}"
+                        playbook: 'ci_cd/Ansible/kubespray_setup.yml',
+                        inventory: "localhost",
+                        extras: "--become -e ansible_user=${SSH_USER} -e ansible_ssh_private_key_file=${SSH_KEY} -vvvv"
                     )
                 }
             }

@@ -3,6 +3,10 @@
 - hosts: localhost
   become: true
   tasks:
+    - name: Debugging variables
+      debug:
+        var: ansible_user
+
     - name: Клонировать репозиторий Kubespray на Jenkins воркере
       git:
         repo: 'https://github.com/kubernetes-sigs/kubespray.git'
