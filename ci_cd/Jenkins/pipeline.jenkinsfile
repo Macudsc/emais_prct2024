@@ -197,11 +197,11 @@ pipeline {
             withCredentials([sshUserPrivateKey(credentialsId: 'jenkins-node-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER'),
               sshUserPrivateKey(credentialsId: 'vm-ssh-key', keyFileVariable: 'VM_SSH_KEY', usernameVariable: 'VM_SSH_USER')]) {
                 script {
-                    ansiblePlaybook{
+                    ansiblePlaybook(
                       playbook: 'cluster.yml',
                       inventory: "inventory/mycluster/hosts.yml",
                       extras: "--private-key ${VM_SSH_KEY} --become --become-user=${VM_SSH_USER} -e master_ip=${MASTER_IP} -e worker_ip=${WORKER_IP}"
-                    }
+                    )
                 }
             }
         }
