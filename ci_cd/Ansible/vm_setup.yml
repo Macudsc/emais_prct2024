@@ -1,4 +1,5 @@
 ---
+#ci_cd/Ansible/vm_setup.yml
 - hosts: all
   become: true
   tasks:
@@ -10,14 +11,18 @@
         update_cache: yes
         cache_valid_time: 3600
 
-    #- name: Удалить проблемные пакеты NVIDIA вручную
-    #  shell: |
-    #    dpkg --remove --force-remove-reinstreq nvidia-container-toolkit nvidia-docker2 nvidia-firmware-535-535.183.01 nvidia-kernel-source-510 nvidia-kernel-source-535 nvidia-modprobe nvidia-prime nvidia-settings
-    #  ignore_errors: yes
+    - name: Исправление зависимостей
+      apt:
+        upgrade: dist
+      ignore_errors: yes
 
-    #- name: Исправить сломанные зависимости (после удаления)
-    #  shell: apt --fix-broken install -y
-    #  ignore_errors: yes
+    - name: Удалить драйверы Nvidia
+      apt:
+        name:
+          - nvidia-dkms-535
+          - nvidia-driver-510
+        state: absent
+      ignore_errors: yes
 
     - name: Обновить систему
       apt:
@@ -25,9 +30,6 @@
         autoclean: yes
         autoremove: yes
       ignore_errors: yes
-
-    #- name: Заблокировать пакеты NVIDIA от обновления
-    #  shell: apt-mark hold 'nvidia-*'
 
     - name: Установить необходимые пакеты
       apt:
@@ -57,7 +59,7 @@
       apt:
         update_cache: yes
 
-    - name: Установить Docker
+    - name: Установить Docker с попыткой исправления зависимостей
       apt:
         name:
           - docker-ce
@@ -66,6 +68,12 @@
           - docker-buildx-plugin
           - docker-compose-plugin
         state: present
+      register: docker_install
+      ignore_errors: yes
+
+    - name: Исправить ошибки установки Docker
+      shell: apt --fix-broken install -y
+      when: docker_install.failed
 
     - name: Убедиться, что Docker включен
       systemd:
