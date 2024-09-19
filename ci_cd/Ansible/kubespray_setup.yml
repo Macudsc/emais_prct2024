@@ -1,6 +1,6 @@
 ---
 # ci_cd/Ansible/kubespray_setup.yml
-- hosts: {{ master_ip }}
+- hosts: "{{ master_ip }}"
   become: true
   tasks:
     - name: Клонировать репозиторий Kubespray
