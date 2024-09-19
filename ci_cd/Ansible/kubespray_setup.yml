@@ -1,7 +1,6 @@
 ---
 # ci_cd/Ansible/kubespray_setup.yml
 - hosts: localhost
-  #become: true
   tasks:
     - name: Debugging variables
       debug:
@@ -12,22 +11,7 @@
         repo: 'https://github.com/kubernetes-sigs/kubespray.git'
         dest: "{{ lookup('env', 'WORKSPACE') }}/kubespray"
 
-    #- name: Проверить права доступа на директорию
-    #  command: ls -ld "{{ lookup('env', 'WORKSPACE') }}/kubespray"
-
-    #- name: Установить зависимости на Jenkins воркере
-    #  become: true
-    #  apt:
-    #    name:
-    #      - python3-pip
-    #      - python3-setuptools
-    #      - python3-venv
-    #      - python3-wheel
-    #    state: present
-    #    update_cache: yes
-
     - name: Установить зависимости pip
-      #become: true
       pip:
         requirements: "{{ lookup('env', 'WORKSPACE') }}/kubespray/requirements.txt"
 
@@ -46,6 +30,6 @@
     - name: Запустить настройку кластера Kubernetes
       shell: |
         cd "{{ lookup('env', 'WORKSPACE') }}/kubespray"
-        ansible-playbook -i inventory/mycluster/hosts.yml --private-key $SSH_KEY --become --become-user=$SSH_USER cluster.yml
+        ansible-playbook -i inventory/mycluster/hosts.yml --private-key $VM_SSH_KEY --become --become-user=$VM_SSH_USER cluster.yml
       args:
         chdir: "{{ lookup('env', 'WORKSPACE') }}/kubespray"
