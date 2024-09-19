@@ -1,63 +1,42 @@
 ---
 #ci_cd/Ansible/vm_setup.yml
-- hosts: all
-  become: true
-  tasks:
-    - name: Проверка системы
-      shell: whoami
+- name: Подготовка виртуалки
+  hosts: all
+  become: yes
 
-    - name: Обновить индекс пакетов
+  tasks:
+    - name: Обновление списка пакетов
       apt:
         update_cache: yes
-        cache_valid_time: 3600
 
-    - name: Исправить зависимости
-      shell: apt --fix-broken install -y
-      ignore_errors: yes
-
-    - name: Удалить драйверы Nvidia
-      apt:
-        name: "{{ item }}"
-        state: absent
-      loop:
-        - nvidia-dkms-535
-        - nvidia-driver-510
-        - nvidia-kernel-common-510
-        - nvidia-driver-535
-
-    - name: Обновить систему
-      apt:
-        upgrade: dist
-
-    - name: Установить необходимые пакеты
+    - name: Установка необходимых пакетов
       apt:
         name:
           - ca-certificates
           - curl
         state: present
-        update_cache: yes
 
-    - name: Создать каталог для ключей APT
+    - name: Создание директории для ключей apt
       file:
         path: /etc/apt/keyrings
         state: directory
         mode: '0755'
 
-    - name: Добавить GPG-ключ Docker
+    - name: Скачивание официального GPG-ключа Docker
       get_url:
         url: https://download.docker.com/linux/ubuntu/gpg
         dest: /etc/apt/keyrings/docker.asc
         mode: '0644'
 
-    - name: Добавить репозиторий Docker через shell
+    - name: Добавление Docker репозитория
       shell: |
-        echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+        echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo \"$VERSION_CODENAME\") stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
 
-    - name: Обновить индекс пакетов после добавления репозитория Docker
+    - name: Обновление списка пакетов после добавления репозитория
       apt:
         update_cache: yes
 
-    - name: Установить Docker с попыткой исправления зависимостей
+    - name: Установка Docker и плагинов
       apt:
         name:
           - docker-ce
@@ -66,25 +45,13 @@
           - docker-buildx-plugin
           - docker-compose-plugin
         state: present
-      register: docker_install
-      ignore_errors: yes
 
-    - name: Исправить ошибки установки Docker
-      shell: apt --fix-broken install -y
-      when: docker_install.failed
-
-    - name: Убедиться, что Docker включен
-      systemd:
-        name: docker
-        enabled: yes
-        state: started
-
-    - name: Создать группу Docker
+    - name: Создание группы docker
       group:
         name: docker
         state: present
 
-    - name: Добавить пользователя в группу Docker
+    - name: Добавление пользователя в группу docker
       user:
         name: "{{ ansible_user }}"
         groups: docker
