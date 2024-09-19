@@ -183,7 +183,7 @@ pipeline {
             }
         }
     }
-    stage{
+    stage('Copy key') {
       steps {
         withCredentials([sshUserPrivateKey(credentialsId: 'vm-ssh-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
           //sh "scp -i {SSH_KEY} {SSH_KEY} {SSH_USER}@{MASTER_IP}:.ssh/id_rsa"
