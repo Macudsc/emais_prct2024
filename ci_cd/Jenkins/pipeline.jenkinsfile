@@ -178,12 +178,13 @@ pipeline {
     // Кубспрей на своей дженкинс ноде
     stage('Install Kubernetes with Kubespray') {
         steps {
-            withCredentials([sshUserPrivateKey(credentialsId: 'jenkins-node-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
+            withCredentials([sshUserPrivateKey(credentialsId: 'jenkins-node-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER'),
+            sshUserPrivateKey(credentialsId: 'vm-ssh-key', keyFileVariable: 'VM_SSH_KEY', usernameVariable: 'VM_SSH_USER')]) {
                 script {
                     ansiblePlaybook(
                         playbook: 'ci_cd/Ansible/kubespray_setup.yml',
                         inventory: "localhost",
-                        extras: "-e ansible_user=${SSH_USER} -e ansible_ssh_private_key_file=${SSH_KEY} -e master_ip=${MASTER_IP} -e worker_ip=${WORKER_IP} -v"
+                        extras: "-e ansible_user=${SSH_KEY} -e ansible_ssh_private_key_file=${VM_SSH_USER} -e master_ip=${MASTER_IP} -e worker_ip=${WORKER_IP} -v"
                     )
                 }
             }
@@ -192,8 +193,7 @@ pipeline {
 
     stage('Configure StorageClass') {
         steps {
-            withCredentials([sshUserPrivateKey(credentialsId: 'vm-ssh-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER'),
-            sshUserPrivateKey(credentialsId: 'vm-ssh-key', keyFileVariable: 'VM_SSH_KEY', usernameVariable: 'VM_SSH_USER')]) {
+            withCredentials([sshUserPrivateKey(credentialsId: 'vm-ssh-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
                 script {
                     ansiblePlaybook(
                         playbook: 'ci_cd/Ansible/kubespray_setup.yml',
