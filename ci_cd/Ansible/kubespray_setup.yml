@@ -27,11 +27,6 @@
       args:
         chdir: "{{ lookup('env', 'WORKSPACE') }}/kubespray"
 
-    - name: Вывод hosts
-      shell:
-        cd "{{ lookup('env', 'WORKSPACE') }}/kubespray"
-        cat inventory/mycluster/hosts.yml
-
     #- name: Запустить настройку кластера Kubernetes
     #  shell: |
     #    cd "{{ lookup('env', 'WORKSPACE') }}/kubespray"
