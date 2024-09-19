@@ -39,7 +39,7 @@ resource "yandex_compute_instance" "master" {
 
   boot_disk {
     initialize_params {
-      image_id = "fd80d7fnvf399b1c207j" # Ubuntu 22.04
+      image_id = "fd84uoseqemi8gihbs05" # Ubuntu 24.04
       size     = var.disk_size_master # Размер диска
     }
   }
@@ -67,7 +67,7 @@ resource "yandex_compute_instance" "worker" {
 
   boot_disk {
     initialize_params {
-      image_id = "fd80d7fnvf399b1c207j" # Ubuntu 22.04
+      image_id = "fd84uoseqemi8gihbs05" # Ubuntu 24.04
       size     = var.disk_size_worker # Размер диска
     }
   }

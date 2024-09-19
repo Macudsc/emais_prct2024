@@ -1,5 +1,5 @@
-# ci_cd/Ansible/kubespray_setup.yml
 ---
+# ci_cd/Ansible/kubespray_setup.yml
 - hosts: all
   become: true
   tasks:

@@ -5,16 +5,24 @@
   become: yes
 
   tasks:
-    - name: Обновление списка пакетов
+    - name: Обновить индекс пакетов
       apt:
         update_cache: yes
+        cache_valid_time: 3600
 
-    - name: Установка необходимых пакетов
+    - name: Исправить проблемы с зависимостями
       apt:
-        name:
+        upgrade: yes
+        autoclean: yes
+        autoremove: yes
+
+    - name: Установить необходимые пакеты
+      apt:
+        name: 
           - ca-certificates
           - curl
         state: present
+        update_cache: yes
 
     - name: Создание директории для ключей apt
       file:
