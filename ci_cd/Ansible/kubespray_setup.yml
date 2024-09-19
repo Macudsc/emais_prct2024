@@ -34,6 +34,6 @@
     - name: Запустить настройку кластера Kubernetes
       shell: |
         cd /home/jenkins/kubespray
-        ansible-playbook -i inventory/mycluster/hosts.yml --private-key /path/to/your/private/key --become --become-user=$SSH_USER cluster.yml
+        ansible-playbook -i inventory/mycluster/hosts.yml --private-key $SSH_KEY --become --become-user=$SSH_USER cluster.yml
       args:
         chdir: /home/jenkins/kubespray
