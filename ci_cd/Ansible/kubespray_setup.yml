@@ -26,6 +26,12 @@
       pip:
         name: ruamel.yaml
 
+    - name: Копировать приватный ключ на мастер
+      copy:
+        src: /home/jenkins/.ssh/id_rsa
+        dest: /home/moon/.ssh/id_rsa
+        mode: '0600'
+
     - name: Копировать инвентарь и настроить под ВМ
       shell: |
         cd /home/moon/kubespray
