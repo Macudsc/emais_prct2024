@@ -1,19 +1,118 @@
-pipeline{
+pipeline {
     agent any
     environment {
-      KUBECONFIG_FILE = '/tmp/kubeconfig' // Путь к kubeconfig на Jenkins
+        DOCKER_CREDS = 'dockerhub-credentials-id'
+        TG_BOT_TOKEN = credentials('telegram-bot-token')
+        KUBECONFIG_FILE = '/tmp/kubeconfig'
+        CLOUD_ID = credentials('yandex-cloud-id')
+        FOLDER_ID = credentials('yandex-folder-id')
+        YC_TOKEN = credentials('yandex-token')
+        PATH = "${env.PATH}:/home/jenkins/yandex-cloud/bin" // Добавляем путь к yc CLI
+  }
+  stages {
+    stage('Checkout github') {
+      steps {
+        git branch: 'dev', url: 'https://github.com/Macudsc/emais_prct2024.git'
+      }
     }
-    stages{
-        stage('delete K8s emais-ns') {
-          steps {
-            script {
-              sh 'curl -LO "https://storage.googleapis.com/kubernetes-release/release/v1.20.5/bin/linux/amd64/kubectl"'
-              sh 'chmod u+x ./kubectl'  
-              sh "./kubectl --kubeconfig=${KUBECONFIG_FILE} delete -f ci_cd/K8s/namespace.yml"
+    stage('Prepare tg bot token') {
+      steps {
+        sh "echo \"tokenn='${TG_BOT_TOKEN}'\" >> Emais/sensetiv.py"
+      }
+    }
+    stage('Generate creds.tfvars') {
+      steps {
+        script {
+          sh """
+            echo 'cloud_id  = "${CLOUD_ID}"' > ci_cd/Terraform/creds.tfvars
+            echo 'folder_id = "${FOLDER_ID}"' >> ci_cd/Terraform/creds.tfvars
+            echo 'token     = "${YC_TOKEN}"' >> ci_cd/Terraform/creds.tfvars
+          """
+        }
+      }
+    }
+    // Стадия создания клауд-конфига
+    stage('Generate cloud-config') {
+        steps {
+            withCredentials([string(credentialsId: 'terraform-ssh-pubkey', variable: 'SSH_PUBKEY')]) {
+                script {
+                    def sshPubKey = "${SSH_PUBKEY}".trim()
+                    sh """
+                      sed 's|{{ ssh_key }}|${sshPubKey}|' ci_cd/Terraform/cloud-config > ci_cd/Terraform/cloud-config-gen
+                    """
+                    sh "mv ci_cd/Terraform/cloud-config-gen ci_cd/Terraform/cloud-config"
+                }
             }
-          }
         }
     }
+    stage('Install and Use yc CLI') {
+      steps {
+        sh '''
+          curl -sL https://storage.yandexcloud.net/yandexcloud-yc/install.sh | bash
+          export PATH=$PATH:/home/jenkins/yandex-cloud/bin
+          echo "PATH=$PATH"
+          yc vpc network list --format json
+          yc vpc subnet list --format json
+          yc vpc address list --format json
+        '''
+      }
+    }
+
+    stage('Check Existing Infrastructure') {
+        steps {
+            withEnv(["PATH+YC=/home/jenkins/yandex-cloud/bin"]) {
+                script {
+                    // Проверка наличия сети
+                    def networkExists = sh(
+                        script: 'yc vpc network list --format json | jq -e \'.[] | select(.name == "network1")\'',
+                        returnStatus: true
+                    ) == 0
+
+                    // Проверка наличия подсети
+                    def subnetExists = sh(
+                        script: 'yc vpc subnet list --format json | jq -e \'.[] | select(.name == "subnet1")\'',
+                        returnStatus: true
+                    ) == 0
+
+                    // Проверка наличия мастера
+                    def masterExists = sh(
+                        script: 'yc compute instance list --format json | jq -e \'.[] | select(.name == "k8s-master-0")\'',
+                        returnStatus: true
+                    ) == 0
+
+                    // Проверка наличия воркера
+                    def workerExists = sh(
+                        script: 'yc compute instance list --format json | jq -e \'.[] | select(.name == "k8s-worker-0")\'',
+                        returnStatus: true
+                    ) == 0
+
+                    // Если все ресурсы существуют, то пропуск создания инфраструктуры
+                    if (networkExists && subnetExists && masterExists && workerExists) {
+                        echo 'Инфраструктура найдена. Пропуск шагов создания...'
+                        env.INFRA_EXISTS = 'true'
+                    } else {
+                        echo 'Инфраструктура не готова, создание заново...'
+                        env.INFRA_EXISTS = 'false'
+                    }
+                }
+            }
+        }
+}
+    stage('Plan and Apply Infrastructure') {
+        when {
+            expression { return env.INFRA_EXISTS == 'false' }
+        }
+        steps {
+            script {
+                dir('ci_cd/Terraform') {
+                    sh 'terraform init'
+                    sh 'terraform plan -var-file=vars.tfvars -var-file=creds.tfvars -out=tfplan'
+                    sh 'terraform apply -auto-approve tfplan'
+                }
+            }
+        }
+    }
+  }
     post{
       always {
         cleanWs()

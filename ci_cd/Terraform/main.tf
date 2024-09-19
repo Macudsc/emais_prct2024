@@ -66,8 +66,8 @@ resource "yandex_compute_instance" "worker" {
 
   boot_disk {
     initialize_params {
-      image_id = "fd8hglaneh113l00tv83"
-      #image_id = "fd80d7fnvf399b1c207j"
+      image_id = "fd8vhjfb9b7cdi04656l"
+      snapshot_id = "ubuntu-2204-lts"
     }
   }
 
