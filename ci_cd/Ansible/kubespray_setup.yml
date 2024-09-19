@@ -30,6 +30,6 @@
     - name: Запустить настройку кластера Kubernetes
       shell: |
         cd "{{ lookup('env', 'WORKSPACE') }}/kubespray"
-        ansible-playbook -i inventory/mycluster/hosts.yml --private-key {{ vm_ssh_key }} --become --become-user={{ vm_ssh_user }} cluster.yml
+        ansible-playbook -i inventory/mycluster/hosts.yml -b -v cluster.yml
       args:
         chdir: "{{ lookup('env', 'WORKSPACE') }}/kubespray"
