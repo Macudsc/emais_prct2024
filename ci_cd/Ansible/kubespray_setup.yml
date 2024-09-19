@@ -10,7 +10,18 @@
     - name: Клонировать репозиторий Kubespray на Jenkins воркере
       git:
         repo: 'https://github.com/kubernetes-sigs/kubespray.git'
-        dest: /home/jenkins/kubespray
+        dest: "{{ lookup('env', 'WORKSPACE') }}/kubespray"
+        version: master
+        update: yes
+        track_submodules: yes
+        accept_hostkey: yes
+      register: git_clone_result
+
+    - debug:
+        var: git_clone_result
+
+    - name: Проверить права доступа на директорию
+      command: ls -ld "{{ lookup('env', 'WORKSPACE') }}/kubespray"
 
     - name: Установить зависимости на Jenkins воркере
       become: true
@@ -25,19 +36,19 @@
 
     - name: Установить зависимости pip
       pip:
-        requirements: /home/jenkins/kubespray/requirements.txt
+        requirements: "{{ lookup('env', 'WORKSPACE') }}/kubespray/requirements.txt"
 
     - name: Копировать инвентарь и настроить под ВМ
       shell: |
-        cd /home/jenkins/kubespray
+        cd "{{ lookup('env', 'WORKSPACE') }}/kubespray"
         cp -rfp inventory/sample inventory/mycluster
         CONFIG_FILE=inventory/mycluster/hosts.yml python3 contrib/inventory_builder/inventory.py {{ master_ip }} {{ worker_ip }}
       args:
-        chdir: /home/jenkins/kubespray
+        chdir: "{{ lookup('env', 'WORKSPACE') }}/kubespray"
 
     - name: Запустить настройку кластера Kubernetes
       shell: |
-        cd /home/jenkins/kubespray
+        cd "{{ lookup('env', 'WORKSPACE') }}/kubespray"
         ansible-playbook -i inventory/mycluster/hosts.yml --private-key $SSH_KEY --become --become-user=$SSH_USER cluster.yml
       args:
-        chdir: /home/jenkins/kubespray
+        chdir: "{{ lookup('env', 'WORKSPACE') }}/kubespray"
