@@ -25,14 +25,8 @@
 
     - name: Установить зависимости на Jenkins воркере
       become: true
-      apt:
-        name:
-          - python3-pip
-          - python3-setuptools
-          - python3-venv
-          - python3-wheel
-        state: present
-        update_cache: yes
+      shell: |
+        apt update && apt install -y python3-pip python3-setuptools python3-venv python3-wheel
 
     - name: Установить зависимости pip
       pip:
