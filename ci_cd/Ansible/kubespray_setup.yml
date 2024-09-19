@@ -1,7 +1,7 @@
 ---
 # ci_cd/Ansible/kubespray_setup.yml
 - hosts: localhost
-  become: true
+  #become: true
   tasks:
     - name: Debugging variables
       debug:
@@ -15,10 +15,6 @@
         update: yes
         track_submodules: yes
         accept_hostkey: yes
-      register: git_clone_result
-
-    - debug:
-        var: git_clone_result
 
     - name: Проверить права доступа на директорию
       command: ls -ld "{{ lookup('env', 'WORKSPACE') }}/kubespray"
@@ -35,6 +31,7 @@
         update_cache: yes
 
     - name: Установить зависимости pip
+      become: true
       pip:
         requirements: "{{ lookup('env', 'WORKSPACE') }}/kubespray/requirements.txt"
 
