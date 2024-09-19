@@ -182,7 +182,7 @@ pipeline {
                     ansiblePlaybook(
                         playbook: 'ci_cd/Ansible/kubespray_setup.yml',
                         inventory: "localhost",
-                        extras: "--become -e ansible_user=jenkins -e ansible_ssh_private_key_file=${SSH_KEY}"
+                        extras: "--become -e ansible_user=localhost -e ansible_ssh_private_key_file=${SSH_KEY}"
                     )
                 }
             }
