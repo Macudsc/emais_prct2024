@@ -175,6 +175,7 @@ pipeline {
             }
         }
     }
+    // Кубспрей на своей дженкинс ноде
     stage('Install Kubernetes with Kubespray') {
         steps {
             withCredentials([sshUserPrivateKey(credentialsId: 'jenkins-node-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
@@ -182,7 +183,7 @@ pipeline {
                     ansiblePlaybook(
                         playbook: 'ci_cd/Ansible/kubespray_setup.yml',
                         inventory: "localhost",
-                        extras: "-e ansible_user=${SSH_USER} -e ansible_ssh_private_key_file=${SSH_KEY} -v"
+                        extras: "-e ansible_user=${SSH_USER} -e ansible_ssh_private_key_file=${SSH_KEY} -e master_ip=${MASTER_IP} -e worker_ip=${WORKER_IP} -v"
                     )
                 }
             }
