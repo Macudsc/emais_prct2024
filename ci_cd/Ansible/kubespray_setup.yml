@@ -1,6 +1,6 @@
 ---
 # ci_cd/Ansible/kubespray_setup.yml
-- hosts: all
+- hosts: {{ master_ip }}
   become: true
   tasks:
     - name: Клонировать репозиторий Kubespray
@@ -43,7 +43,7 @@
     - name: Запустить настройку кластера Kubernetes
       shell: |
         cd /home/moon/kubespray
-        ansible-playbook -i inventory/mycluster/hosts.yml --private-key ~/.ssh/id_rsa --become --become-user=root cluster.yml
+        ansible-playbook -i inventory/mycluster/hosts.yml --private-key ~/.ssh/id_rsa --become --become-user=moon cluster.yml
       args:
         chdir: /home/moon/kubespray
 
