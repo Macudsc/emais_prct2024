@@ -1,4 +1,3 @@
-# ci_cd/Ansible/vm_setup.yml
 ---
 - hosts: all
   become: true
@@ -11,15 +10,14 @@
         update_cache: yes
         cache_valid_time: 3600
 
-    - name: Исправить сломанные зависимости
+    - name: Исправить сломанные зависимости (сначала)
+      shell: apt --fix-broken install -y
+      ignore_errors: yes
+
+    - name: Обновить систему (dist-upgrade)
       apt:
         upgrade: dist
-        force_apt_get: yes
-        state: latest
         autoremove: yes
-
-    - name: Запустить apt --fix-broken install для исправления зависимостей
-      shell: apt --fix-broken install -y
       ignore_errors: yes
 
     - name: Удалить проблемные пакеты NVIDIA
@@ -43,12 +41,6 @@
 
     - name: Исправить поврежденные пакеты
       command: dpkg --configure -a
-
-    - name: Исправить проблемы с зависимостями
-      apt:
-        upgrade: dist
-        autoclean: yes
-        autoremove: yes
 
     - name: Установить необходимые пакеты
       apt:
