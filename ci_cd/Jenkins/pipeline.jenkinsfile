@@ -151,7 +151,7 @@ pipeline {
                     if (env.INFRA_EXISTS == 'false') {
                         sh """
                             echo 'Новая инфраструктура...'
-                            sleep 30
+                            sleep 40
                             ssh-keyscan -H ${MASTER_IP} >> ~/.ssh/known_hosts
                             ssh-keyscan -H ${WORKER_IP} >> ~/.ssh/known_hosts
                             sleep 10
@@ -181,18 +181,32 @@ pipeline {
                 script {
                     ansiblePlaybook(
                         playbook: 'ci_cd/Ansible/kubespray_setup.yml',
-                        inventory: "${MASTER_IP},${WORKER_IP},",
-                        extras: "-e master_ip=${MASTER_IP} -e worker_ip=${WORKER_IP} -e ansible_user=$SSH_USER -e ansible_ssh_private_key_file=${SSH_KEY}"
+                        inventory: "inventory/mycluster/hosts.yml",
+                        extras: "-e ansible_user=$SSH_USER -e ansible_ssh_private_key_file=${SSH_KEY}"
                     )
                 }
             }
         }
     }
+
+    stage('Configure StorageClass') {
+        steps {
+            withCredentials([sshUserPrivateKey(credentialsId: 'vm-ssh-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
+                script {
+                    ansiblePlaybook(
+                        playbook: 'ci_cd/Ansible/configure_storageclass.yml',
+                        inventory: "inventory/mycluster/hosts.yml",
+                        extras: "-e ansible_user=$SSH_USER -e ansible_ssh_private_key_file=${SSH_KEY}"
+                    )
+                }
+            }
+        }
+    }
+
     stage('Fetch and Replace kubeconfig') {
         steps {
             withCredentials([sshUserPrivateKey(credentialsId: 'vm-ssh-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
                 script {
-                    // Внимание. пользователь теперь moon, а не рут
                     sh """
                         scp -i ${SSH_KEY} ${SSH_USER}@${MASTER_IP}:/home/moon/.kube/config /tmp/kubeconfig
                     """
