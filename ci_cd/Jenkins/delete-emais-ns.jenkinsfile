@@ -57,57 +57,11 @@ pipeline {
         '''
       }
     }
-
-    stage('Check Existing Infrastructure') {
-        steps {
-            withEnv(["PATH+YC=/home/jenkins/yandex-cloud/bin"]) {
-                script {
-                    // Проверка наличия сети
-                    def networkExists = sh(
-                        script: 'yc vpc network list --format json | jq -e \'.[] | select(.name == "network1")\'',
-                        returnStatus: true
-                    ) == 0
-
-                    // Проверка наличия подсети
-                    def subnetExists = sh(
-                        script: 'yc vpc subnet list --format json | jq -e \'.[] | select(.name == "subnet1")\'',
-                        returnStatus: true
-                    ) == 0
-
-                    // Проверка наличия мастера
-                    def masterExists = sh(
-                        script: 'yc compute instance list --format json | jq -e \'.[] | select(.name == "k8s-master-0")\'',
-                        returnStatus: true
-                    ) == 0
-
-                    // Проверка наличия воркера
-                    def workerExists = sh(
-                        script: 'yc compute instance list --format json | jq -e \'.[] | select(.name == "k8s-worker-0")\'',
-                        returnStatus: true
-                    ) == 0
-
-                    // Если все ресурсы существуют, то пропуск создания инфраструктуры
-                    if (networkExists && subnetExists && masterExists && workerExists) {
-                        echo 'Инфраструктура найдена. Пропуск шагов создания...'
-                        env.INFRA_EXISTS = 'true'
-                    } else {
-                        echo 'Инфраструктура не готова, создание заново...'
-                        env.INFRA_EXISTS = 'false'
-                    }
-                }
-            }
-        }
-}
     stage('Plan and Apply Infrastructure') {
-        when {
-            expression { return env.INFRA_EXISTS == 'false' }
-        }
         steps {
             script {
                 dir('ci_cd/Terraform') {
-                    sh 'terraform init'
-                    sh 'terraform plan -var-file=vars.tfvars -var-file=creds.tfvars -out=tfplan'
-                    sh 'terraform apply -auto-approve tfplan'
+                    sh 'yc compute instance delete k8s-master-0 || yc compute instance delete k8s-worker-0 || yc vpc subnet delete subnet1 || yc vpc network delete network1'
                 }
             }
         }

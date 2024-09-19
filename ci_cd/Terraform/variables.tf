@@ -14,3 +14,12 @@ variable "count_master" {
 variable "count_worker" {
   default = 1
 }
+variable "disk_size_master" {
+  type        = number
+  default     = 30
+}
+
+variable "disk_size_worker" {
+  type        = number
+  default     = 30 
+}
