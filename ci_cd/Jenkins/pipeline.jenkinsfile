@@ -187,7 +187,7 @@ pipeline {
       steps {
         withCredentials([sshUserPrivateKey(credentialsId: 'vm-ssh-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
           //sh "scp -i {SSH_KEY} {SSH_KEY} {SSH_USER}@{MASTER_IP}:.ssh/id_rsa"
-          sh "scp -i $HOME/.ssh/rsa_id {SSH_KEY} {SSH_USER}@{WORKER_IP}:.ssh/id_rsa"
+          sh "scp -i $HOME/.ssh/id_rsa {SSH_KEY} {SSH_USER}@{WORKER_IP}:.ssh/id_rsa"
         }
         
       }
