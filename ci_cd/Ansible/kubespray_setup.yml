@@ -11,10 +11,6 @@
       git:
         repo: 'https://github.com/kubernetes-sigs/kubespray.git'
         dest: "{{ lookup('env', 'WORKSPACE') }}/kubespray"
-        version: master
-        update: yes
-        track_submodules: yes
-        accept_hostkey: yes
 
     #- name: Проверить права доступа на директорию
     #  command: ls -ld "{{ lookup('env', 'WORKSPACE') }}/kubespray"
