@@ -18,18 +18,17 @@
 
     - name: Удалить драйверы Nvidia
       apt:
-        name:
-          - nvidia-dkms-535
-          - nvidia-driver-510
+        name: "{{ item }}"
         state: absent
-      ignore_errors: yes
+      loop:
+        - nvidia-dkms-535
+        - nvidia-driver-510
+        - nvidia-kernel-common-510
+        - nvidia-driver-535
 
     - name: Обновить систему
       apt:
-        upgrade: yes
-        autoclean: yes
-        autoremove: yes
-      ignore_errors: yes
+        upgrade: dist
 
     - name: Установить необходимые пакеты
       apt:
