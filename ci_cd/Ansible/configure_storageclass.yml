@@ -1,6 +1,6 @@
 ---
 # ci_cd/Ansible/configure_storageclass.yml
-- hosts: "{{ master_ip }}"
+- hosts: "{{ master_ip }}, "
   become: true
   tasks:
     - name: Скопировать kubeconfig на контроллер Jenkins
