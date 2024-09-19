@@ -196,7 +196,7 @@ pipeline {
           withCredentials([sshUserPrivateKey(credentialsId: 'vm-ssh-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
                 script {
                   dir("${env.WORKSPACE}/kubespray") {
-                      sh "inventory/mycluster/hosts.yml"
+                      sh "cat inventory/mycluster/hosts.yml"
                       ansiblePlaybook(
                           playbook: 'cluster.yml',
                           inventory: "inventory/mycluster/hosts.yml",
