@@ -182,7 +182,12 @@ pipeline {
                     ansiblePlaybook(
                         playbook: 'ci_cd/Ansible/kubespray_setup.yml',
                         inventory: "inventory/mycluster/hosts.yml",
-                        extras: "-e ansible_user=$SSH_USER -e ansible_ssh_private_key_file=${SSH_KEY}"
+                        extras: [
+                            extraVars: [
+                                ansible_user: "${SSH_USER}",
+                                ansible_ssh_private_key_file: "${SSH_KEY}"
+                            ]
+                        ]
                     )
                 }
             }
