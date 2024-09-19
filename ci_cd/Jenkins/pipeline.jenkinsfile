@@ -113,11 +113,16 @@ pipeline {
             }
         }
     }
+
+    // Добавить сбор внутренних адресов
     stage('Fetch VM IPs') {
         steps {
             script {
                 def masterIp = ""
                 def workerIp = ""
+
+                def master_internalIp = ""
+                def workerIp_internalIp = ""
 
                 def jsonOutput = sh(script: 'yc compute instance list --format json', returnStdout: true).trim()
                 //echo "JSON Output: ${jsonOutput}"
@@ -135,6 +140,9 @@ pipeline {
 
                 env.MASTER_IP = masterIp
                 env.WORKER_IP = workerIp
+
+                env.MASTER_INTERNALIP = master_internalIp
+                env.WORKER_INTERNALIP = workerIp_internalIp
 
                 echo "Master IP: ${env.MASTER_IP}; Worker IP: ${env.WORKER_IP}"
             }
@@ -175,6 +183,16 @@ pipeline {
             }
         }
     }
+    stage{
+      steps {
+        withCredentials([sshUserPrivateKey(credentialsId: 'vm-ssh-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
+          //sh "scp -i {SSH_KEY} {SSH_KEY} {SSH_USER}@{MASTER_IP}:.ssh/id_rsa"
+          sh "scp -i {SSH_KEY} {SSH_KEY} {SSH_USER}@{WORKER_IP}:.ssh/id_rsa"
+        }
+        
+      }
+    }
+
     //// Стадия для подготовки Кубспрея
     //stage('Prepare Kubespray') {
     //    steps {
