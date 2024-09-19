@@ -24,9 +24,15 @@
       command: ls -ld "{{ lookup('env', 'WORKSPACE') }}/kubespray"
 
     - name: Установить зависимости на Jenkins воркере
-      become: true
-      shell: |
-        apt update && apt install -y python3-pip python3-setuptools python3-venv python3-wheel
+      #become: true
+      apt:
+        name:
+          - python3-pip
+          - python3-setuptools
+          - python3-venv
+          - python3-wheel
+        state: present
+        update_cache: yes
 
     - name: Установить зависимости pip
       pip:
