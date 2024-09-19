@@ -1,6 +1,7 @@
 ---
 # ci_cd/Ansible/kubespray_setup.yml
 - hosts: localhost
+  become: true  # Добавлено для выполнения задач с повышением привилегий
   tasks:
     - name: Клонировать репозиторий Kubespray на Jenkins воркере
       git:
@@ -8,6 +9,7 @@
         dest: /home/jenkins/kubespray
 
     - name: Установить зависимости на Jenkins воркере
+      become: true
       apt:
         name:
           - python3-pip
@@ -32,6 +34,6 @@
     - name: Запустить настройку кластера Kubernetes
       shell: |
         cd /home/jenkins/kubespray
-        ansible-playbook -i inventory/mycluster/hosts.yml --private-key ${ansible_ssh_private_key_file} --become --become-user=$SSH_USER cluster.yml
+        ansible-playbook -i inventory/mycluster/hosts.yml --private-key /path/to/your/private/key --become --become-user=$SSH_USER cluster.yml
       args:
         chdir: /home/jenkins/kubespray
