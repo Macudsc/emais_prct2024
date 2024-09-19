@@ -154,6 +154,7 @@ pipeline {
                             sleep 30
                             ssh-keyscan -H ${MASTER_IP} >> ~/.ssh/known_hosts
                             ssh-keyscan -H ${WORKER_IP} >> ~/.ssh/known_hosts
+                            sleep 10
                         """
                     } else {
                         sh """
