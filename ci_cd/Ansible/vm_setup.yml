@@ -10,7 +10,12 @@
         update_cache: yes
         cache_valid_time: 3600
 
-    - name: Исправить сломанные зависимости (сначала)
+    - name: Удалить проблемные пакеты NVIDIA вручную
+      shell: |
+        dpkg --remove --force-remove-reinstreq nvidia-container-toolkit nvidia-docker2 nvidia-firmware-535-535.183.01 nvidia-kernel-source-510 nvidia-kernel-source-535 nvidia-modprobe nvidia-prime nvidia-settings
+      ignore_errors: yes
+
+    - name: Исправить сломанные зависимости (после удаления)
       shell: apt --fix-broken install -y
       ignore_errors: yes
 
@@ -20,31 +25,12 @@
         autoremove: yes
       ignore_errors: yes
 
-    - name: Удалить проблемные пакеты NVIDIA
-      apt:
-        name: 
-          - 'nvidia-compute-utils-510'
-          - 'nvidia-container-toolkit'
-          - 'nvidia-docker2'
-          - 'nvidia-firmware-535-535.183.01'
-          - 'nvidia-kernel-source-510'
-          - 'nvidia-kernel-source-535'
-          - 'nvidia-modprobe'
-          - 'nvidia-prime'
-          - 'nvidia-settings'
-          - 'nvidia-utils-510'
-        state: absent
-        autoremove: yes
-
-    - name: Заблокировать обновление пакетов NVIDIA
-      command: apt-mark hold 'nvidia-*'
-
-    - name: Исправить поврежденные пакеты
-      command: dpkg --configure -a
+    - name: Заблокировать пакеты NVIDIA от обновления
+      shell: apt-mark hold 'nvidia-*'
 
     - name: Установить необходимые пакеты
       apt:
-        name: 
+        name:
           - ca-certificates
           - curl
         state: present
