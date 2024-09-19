@@ -21,6 +21,8 @@
         name: 
           - ca-certificates
           - curl
+          - software-properties-common   # ИНСТРУКЦИЯ КУБСПРЕЙ
+          - python3-pip                  # ИНСТРУКЦИЯ КУБСПРЕЙ
         state: present
         update_cache: yes
 

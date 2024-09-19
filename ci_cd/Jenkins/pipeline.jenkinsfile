@@ -120,9 +120,8 @@ pipeline {
             script {
                 def masterIp = ""
                 def workerIp = ""
-
-                def master_internalIp = ""
-                def workerIp_internalIp = ""
+                def masterInternalIp = ""
+                def workerInternalIp = ""
 
                 def jsonOutput = sh(script: 'yc compute instance list --format json', returnStdout: true).trim()
                 //echo "JSON Output: ${jsonOutput}"
@@ -135,16 +134,31 @@ pipeline {
                     echo '${jsonOutput}' | jq -r '.[] | select(.name | startswith("k8s-worker-")) | .network_interfaces[0].primary_v4_address.one_to_one_nat.address'
                 """, returnStdout: true).trim()
 
-                echo "Master IP from YC CLI: ${masterIp}"
-                echo "Worker IP from YC CLI: ${workerIp}"
+                masterInternalIp = sh(script: """
+                    echo '${jsonOutput}' | jq -r '.[] | select(.name | startswith("k8s-master-")) | .network_interfaces[0].primary_v4_address.address'
+                """, returnStdout: true).trim()
+
+                workerInternalIp = sh(script: """
+                    echo '${jsonOutput}' | jq -r '.[] | select(.name | startswith("k8s-worker-")) | .network_interfaces[0].primary_v4_address.address'
+                """, returnStdout: true).trim()
+
+                echo "Master IP: ${masterIp}, Internal IP: ${masterInternalIp}"
+                echo "Worker IP: ${workerIp}, Internal IP: ${workerInternalIp}"
 
                 env.MASTER_IP = masterIp
                 env.WORKER_IP = workerIp
-
-                env.MASTER_INTERNALIP = master_internalIp
-                env.WORKER_INTERNALIP = workerIp_internalIp
-
-                echo "Master IP: ${env.MASTER_IP}; Worker IP: ${env.WORKER_IP}"
+                env.MASTER_INTERNALIP = masterInternalIp
+                env.WORKER_INTERNALIP = workerInternalIp
+            }
+        }
+    }
+    stage('Generate Kubespray Inventory') {
+        steps {
+            script {
+                sh """
+                sed 's|{{ master_internalIp }}|${env.MASTER_INTERNALIP}|' ci_cd/Ansible/hosts.yaml.template | \
+                sed 's|{{ worker_internalIp }}|${env.WORKER_INTERNALIP}|' > ci_cd/Ansible/hosts.yaml
+                """
             }
         }
     }
@@ -155,7 +169,7 @@ pipeline {
         steps {
             withCredentials([sshUserPrivateKey(credentialsId: 'vm-ssh-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
                 script {
-                    // Добавляем ключи хостов
+                    // Добавляем ключи хостов + ключ для будущих манипуляций кластером
                     if (env.INFRA_EXISTS == 'false') {
                         sh """
                             echo 'Новая инфраструктура...'
@@ -163,6 +177,9 @@ pipeline {
                             ssh-keyscan -H ${MASTER_IP} >> ~/.ssh/known_hosts
                             ssh-keyscan -H ${WORKER_IP} >> ~/.ssh/known_hosts
                             sleep 10
+                            scp -i $HOME/.ssh/id_rsa ${SSH_KEY} ${SSH_USER}@${MASTER_IP}:.ssh/id_rsa
+                            scp -i $HOME/.ssh/id_rsa ci_cd/Ansible/hosts.yaml ${SSH_USER}@${MASTER_IP}:hosts.yaml
+                            scp -i $HOME/.ssh/id_rsa ${SSH_KEY} ${SSH_USER}@${WORKER_IP}:.ssh/id_rsa
                         """
                     } else {
                         sh """
@@ -183,62 +200,21 @@ pipeline {
             }
         }
     }
-    stage('Copy key') {
-      steps {
-        withCredentials([sshUserPrivateKey(credentialsId: 'vm-ssh-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
-          //sh "scp -i {SSH_KEY} {SSH_KEY} {SSH_USER}@{MASTER_IP}:.ssh/id_rsa"
-          sh "scp -i $HOME/.ssh/id_rsa ${SSH_KEY} ${SSH_USER}@${WORKER_IP}:.ssh/id_rsa"
+
+    // Стадия для подготовки Кубспрея
+    stage('Prepare Kubespray') {
+        steps {
+            withCredentials([sshUserPrivateKey(credentialsId: 'jenkins-node-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER'), sshUserPrivateKey(credentialsId: 'vm-ssh-key', keyFileVariable: 'VM_SSH_KEY', usernameVariable: 'VM_SSH_USER')]) {
+                script {
+                    ansiblePlaybook(
+                        playbook: 'ci_cd/Ansible/kubespray_setup.yml',
+                        inventory: "localhost",
+                        extras: "-e ansible_user=${SSH_USER} -e ansible_ssh_private_key_file=${SSH_KEY} -e master_ip=${MASTER_IP} -e worker_ip=${WORKER_IP} -e vm_ssh_user=${VM_SSH_USER} -e vm_ssh_key=${VM_SSH_KEY}"
+                    )
+                }
+            }
         }
-        
-      }
     }
-
-    //// Стадия для подготовки Кубспрея
-    //stage('Prepare Kubespray') {
-    //    steps {
-    //        withCredentials([sshUserPrivateKey(credentialsId: 'jenkins-node-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER'), sshUserPrivateKey(credentialsId: 'vm-ssh-key', keyFileVariable: 'VM_SSH_KEY', usernameVariable: 'VM_SSH_USER')]) {
-    //            script {
-    //                ansiblePlaybook(
-    //                    playbook: 'ci_cd/Ansible/kubespray_setup.yml',
-    //                    inventory: "localhost",
-    //                    extras: "-e ansible_user=${SSH_USER} -e ansible_ssh_private_key_file=${SSH_KEY} -e master_ip=${MASTER_IP} -e worker_ip=${WORKER_IP} -e vm_ssh_user=${VM_SSH_USER} -e vm_ssh_key=${VM_SSH_KEY}"
-    //                )
-    //            }
-    //        }
-    //    }
-    //}
-
-    //// Стадия для запуска настройки кластера
-    //stage('Configure Kubernetes Cluster') {
-    //    steps {
-    //      withCredentials([sshUserPrivateKey(credentialsId: 'vm-ssh-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
-    //            script {
-    //              dir("${env.WORKSPACE}/kubespray") {
-    //                  sh "cat inventory/mycluster/hosts.yml"
-    //                  ansiblePlaybook(
-    //                      playbook: 'cluster.yml',
-    //                      inventory: "inventory/mycluster/hosts.yml",
-    //                      extras: "--private-key ${SSH_KEY} --become --become-user=${SSH_USER} -e master_ip=${MASTER_IP} -e worker_ip=${WORKER_IP}"
-    //                  )
-    //              }
-    //            }
-    //        }
-    //    }
-    //}
-
-    //stage('Configure StorageClass') {
-    //    steps {
-    //        withCredentials([sshUserPrivateKey(credentialsId: 'vm-ssh-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
-    //            script {
-    //                ansiblePlaybook(
-    //                    playbook: 'ci_cd/Ansible/kubespray_setup.yml',
-    //                    inventory: "${MASTER_IP},${WORKER_IP}",
-    //                    extras: "--become -e ansible_user=${SSH_USER} -e ansible_ssh_private_key_file=${SSH_KEY}"
-    //                )
-    //            }
-    //        }
-    //    }
-    //}
 
     //stage('Fetch and Replace kubeconfig') {
     //    steps {
@@ -287,7 +263,6 @@ pipeline {
     //    }
     //  }
     //}
-
     //stage('Docker image remove') {
     //  steps {
     //    script {

@@ -1,0 +1,26 @@
+all:
+  hosts:
+    node1:
+      ansible_host: {{ master_internalIp }}
+      ip: {{ master_internalIp }}
+      access_ip: {{ master_internalIp }}
+    node2:
+      ansible_host: {{ worker_internalIp }}
+      ip: {{ worker_internalIp }}
+      access_ip: {{ worker_internalIp }}
+  children:
+    kube_control_plane:
+      hosts:
+        node1:
+    kube_node:
+      hosts:
+        node2:
+    etcd:
+      hosts:
+        node1:
+    k8s_cluster:
+      children:
+        kube_control_plane:
+        kube_node:
+    calico_rr:
+      hosts: {}
