@@ -1,4 +1,18 @@
-# Учебная практика 2024
+# Emais DevOps Workflow
+
+Основные стадии Jenkins pipeline:
+- Скачать код проекта из репозитория
+- Собрать образ приложения в Докере
+- Отрпавить образ в Docker Hub
+- Настроить аутентификационные данные для Yandex Cloud
+- Настроить cloud-config для будущих виртуальных машин
+- Принять манифесты Terraform и создать инфраструктуру в Yandex Cloud
+- Получить данные созданных виртуальных машин
+- Настроить файл инвентаря для Kubespray
+- Выполнить Ansible-playbook для настройки новых виртуальных машин
+- Выволнить Ansible-playbook для развёртывания приложения в кластере Kubespray
+
+## Ссылки учебной практики
 
 Задание:
 https://joepepper.notion.site/95fb9c02299a44f4ae0d4de5b91498f6
@@ -11,7 +25,7 @@ Google диск:
 
 ---
 
-## Установка
+## Установка (docker-compose)
 
 **YOUR_TG_BOT_TOKEN - ваш токен бота**
 
@@ -53,21 +67,3 @@ docker-compose up --build
 Администратор:
 - редактирование информации о пользователях
 - удаление пользователей
-
-## Some commands
-
-`pip install -r requirements.txt`
-
-`source venv/bin/activate`
-
-`cd Emais/`
-
-`npm run build`
-
-`python manage.py runserver`
-
-`python manage.py runtelegrambot`
-
-`python manage.py makemigrations`
-
-`python manage.py migrate`
