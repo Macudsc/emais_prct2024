@@ -3,49 +3,49 @@
 - name: Deploy Kubernetes Cluster with Kubespray
   hosts: "{{ master_ip }}"
   tasks:
-    #- name: Check if Kubernetes cluster is already deployed
-    #  shell: kubectl cluster-info
-    #  register: cluster_info
-    #  #ignore_errors: true  # Игнорировать ошибки, если кластер не развернут
+    - name: Check if Kubernetes cluster is already deployed
+      shell: kubectl cluster-info
+      register: cluster_info
+      ignore_errors: true  # Игнорировать ошибки, если кластер не развернут
 
     - name: Clone Kubespray repository
       git:
         repo: "https://github.com/kubernetes-sigs/kubespray.git"
         dest: ~/kubespray
-      #when: cluster_info.rc != 0  # Выполнять только если кластер не развернут
+      when: cluster_info.rc != 0  # Выполнять только если кластер не развернут
 
     - name: Install Kubespray dependencies
       pip:
         requirements: ~/kubespray/requirements.txt
         executable: pip3
-      #when: cluster_info.rc != 0  # Выполнять только если кластер не развернут
+      when: cluster_info.rc != 0  # Выполнять только если кластер не развернут
 
     - name: Install additional Python package for Kubespray
       pip:
         name: ruamel.yaml
         executable: pip3
-      #when: cluster_info.rc != 0  # Выполнять только если кластер не развернут
+      when: cluster_info.rc != 0  # Выполнять только если кластер не развернут
 
     - name: Copy sample inventory for Kubespray
       copy:
         src: ~/kubespray/inventory/sample
         dest: ~/kubespray/inventory/mycluster
         remote_src: yes
-      #when: cluster_info.rc != 0  # Выполнять только если кластер не развернут
+      when: cluster_info.rc != 0  # Выполнять только если кластер не развернут
 
     - name: Build inventory from IPs
       shell: |
         CONFIG_FILE=~/kubespray/inventory/mycluster/hosts.yaml python3 ~/kubespray/contrib/inventory_builder/inventory.py "{{ ips }}"
       args:
         executable: /bin/bash
-      #when: cluster_info.rc != 0  # Выполнять только если кластер не развернут
+      when: cluster_info.rc != 0  # Выполнять только если кластер не развернут
 
     - name: Replace hosts.yaml with prepared one
       copy:
         src: ~/hosts.yaml
         dest: ~/kubespray/inventory/mycluster/hosts.yaml
         remote_src: yes
-      #when: cluster_info.rc != 0  # Выполнять только если кластер не развернут
+      when: cluster_info.rc != 0  # Выполнять только если кластер не развернут
 
     - name: Deploy Kubernetes cluster using Kubespray
       shell: |
@@ -54,7 +54,7 @@
       args:
         chdir: ~/kubespray
         executable: /bin/bash
-      #when: cluster_info.rc != 0  # Выполнять только если кластер не развернут
+      when: cluster_info.rc != 0  # Выполнять только если кластер не развернут
       async: 720  # 12 минут
       poll: 0     # Не ждать завершения
       register: deploy_result
@@ -67,35 +67,35 @@
       retries: 12  # Количество попыток (12 * 60 секунд = 12 минут)
       delay: 60    # Задержка между попытками (в секундах)
       ignore_errors: true
-      #when: cluster_info.rc != 0  # Выполнять только если кластер не развернутe
+      when: cluster_info.rc != 0  # Выполнять только если кластер не развернутe
 
     - name: Create .kube directory
       file:
         path: ~/.kube
         state: directory
-      #when: cluster_info.rc != 0  # Выполнять только если кластер не развернут
+      when: cluster_info.rc != 0  # Выполнять только если кластер не развернут
 
     - name: Copy admin kubeconfig
       command: sudo cp /etc/kubernetes/admin.conf ~/.kube/config
-      #when: cluster_info.rc != 0  # Выполнять только если кластер не развернут
+      when: cluster_info.rc != 0  # Выполнять только если кластер не развернут
 
     - name: Change ownership of kubeconfig
       command: /bin/bash -c "sudo chown $(id -u):$(id -g) ~/.kube/config"
-      #when: cluster_info.rc != 0  # Выполнять только если кластер не развернут
+      when: cluster_info.rc != 0  # Выполнять только если кластер не развернут
 
     - name: Apply Local Path Provisioner
       command: kubectl apply -f https://raw.githubusercontent.com/rancher/local-path-provisioner/master/deploy/local-path-storage.yaml
-      #when: cluster_info.rc != 0  # Выполнять только если кластер не развернут
+      when: cluster_info.rc != 0  # Выполнять только если кластер не развернут
 
     - name: Patch Local Path storage class to be default
       shell: |
         kubectl patch storageclass local-path -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
-      #when: cluster_info.rc != 0  # Выполнять только если кластер не развернут
+      when: cluster_info.rc != 0  # Выполнять только если кластер не развернут
 
     - name: Uncordon all nodes
       shell: |
         kubectl uncordon $(kubectl get nodes --no-headers -o custom-columns=":metadata.name")
-      #when: cluster_info.rc != 0  # Выполнять только если кластер не развернут
+      when: cluster_info.rc != 0  # Выполнять только если кластер не развернут
 
     - name: Apply K8s manifests
       shell: |
