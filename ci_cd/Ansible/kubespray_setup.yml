@@ -67,7 +67,7 @@
       retries: 12  # Количество попыток (12 * 60 секунд = 12 минут)
       delay: 60    # Задержка между попытками (в секундах)
       ignore_errors: true
-      when: cluster_info.rc != 0  # Выполнять только если кластер не развернутe
+      when: cluster_info.rc != 0  # Выполнять только если кластер не развернут
 
     - name: Create .kube directory
       file:
