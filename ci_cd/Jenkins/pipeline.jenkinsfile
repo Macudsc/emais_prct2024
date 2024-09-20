@@ -180,11 +180,11 @@ pipeline {
                         """
                     } else {
                         sh """
-                            scp -i $HOME/.ssh/id_rsa ci_cd/Ansible/hosts.yaml ${SSH_USER}@${MASTER_IP}:hosts.yaml
                             ssh-keyscan -H ${MASTER_IP} >> ~/.ssh/known_hosts
                             ssh-keyscan -H ${WORKER_IP} >> ~/.ssh/known_hosts
                         """
                     }
+                    sh "scp -i $HOME/.ssh/id_rsa ci_cd/Ansible/hosts.yaml ${SSH_USER}@${MASTER_IP}:hosts.yaml"
                     ansiblePlaybook(
                         playbook: 'ci_cd/Ansible/vm_setup.yml',
                         inventory: "${MASTER_IP},${WORKER_IP},",
