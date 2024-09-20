@@ -63,16 +63,14 @@ pipeline {
                 script {
                     // Проверка наличия сети
                     def networkExists = sh(
-                        script: 'yc vpc network list --format json | jq -e \'.[] | select(.name == "network1")\'',
-                        returnStatus: true,
-                        returnStdout: false
+                        script: 'yc vpc network list --format json | jq -e \'.[] | select(.name == "network1")\' > /dev/null 2>&1',
+                        returnStatus: true
                     ) == 0
 
                     // Проверка наличия подсети
                     def subnetExists = sh(
                         script: 'yc vpc subnet list --format json | jq -e \'.[] | select(.name == "subnet1")\'',
-                        returnStatus: true,
-                        returnStdout: false
+                        returnStatus: true
                     ) == 0
 
                     // Проверка наличия мастера
