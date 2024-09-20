@@ -39,11 +39,21 @@
     - name: Deploy Kubernetes cluster using Kubespray
       shell: |
         cd ~/kubespray
-        # ~/.local/bin/ansible-playbook -i inventory/mycluster/hosts.yaml cluster.yml -b > ~/kubespray/deploy.log 2>&1
-        ~/.local/bin/ansible-playbook -i inventory/mycluster/hosts.yaml cluster.yml -b | tee ~/kubespray/deploy.log
+        ~/.local/bin/ansible-playbook -i inventory/mycluster/hosts.yaml cluster.yml -b > ~/kubespray/deploy.log 2>&1
       args:
         chdir: ~/kubespray
         executable: /bin/bash
+      async: 720  # 12 минут
+      poll: 0     # Не ждать завершения
+      register: deploy_result
+
+    - name: Wait for deployment to finish or timeout
+      async_status:
+        jid: "{{ deploy_result.ansible_job_id }}"
+      register: job_result
+      until: job_result.finished
+      retries: 12  # Количество попыток
+      delay: 60    # Задержка между попытками (в секундах)
 
     - name: Create .kube directory
       file:
