@@ -3,10 +3,10 @@
 - name: Deploy Kubernetes Cluster with Kubespray
   hosts: "{{ master_ip }}"
   tasks:
-    - name: Check if Kubernetes cluster is already deployed
-      shell: kubectl cluster-info
-      register: cluster_info
-      #ignore_errors: true  # Игнорировать ошибки, если кластер не развернут
+    #- name: Check if Kubernetes cluster is already deployed
+    #  shell: kubectl cluster-info
+    #  register: cluster_info
+    #  #ignore_errors: true  # Игнорировать ошибки, если кластер не развернут
 
     - name: Clone Kubespray repository
       git:
