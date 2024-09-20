@@ -39,7 +39,7 @@
     - name: Deploy Kubernetes cluster using Kubespray
       shell: |
         cd ~/kubespray
-        /usr/bin/ansible-playbook -i inventory/mycluster/hosts.yaml cluster.yml -b -v
+        ~/.local/bin/ansible-playbook -i inventory/mycluster/hosts.yaml cluster.yml -b -v
       args:
         chdir: ~/kubespray
         executable: /bin/bash
