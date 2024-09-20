@@ -42,6 +42,7 @@
         ansible-playbook -i inventory/mycluster/hosts.yaml cluster.yml -b -v
       args:
         chdir: ~/kubespray
+        executable: /bin/bash
 
     - name: Create .kube directory
       file:
