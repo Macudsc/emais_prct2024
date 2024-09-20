@@ -41,8 +41,13 @@
         cd ~/kubespray && \
         export PATH=$PATH:/home/moon/.local/bin && \
         ansible-playbook -i inventory/mycluster/hosts.yaml cluster.yml -b -v
-      #args:
-      #  executable: /bin/bash
+      args:
+        executable: /bin/bash
+      register: ansible_output
+
+    - name: Display Ansible output
+      debug:
+        var: ansible_output.stdout_lines
 
     - name: Create .kube directory
       file:
