@@ -184,8 +184,8 @@ pipeline {
                             ssh-keyscan -H ${WORKER_IP} >> ~/.ssh/known_hosts
                         """
                     }
-                    sh "scp -i $HOME/.ssh/id_rsa ci_cd/Ansible/hosts.yaml ${SSH_USER}@${MASTER_IP}:hosts.yaml"
                     sh "scp -i $HOME/.ssh/id_rsa ${SSH_KEY} ${SSH_USER}@${MASTER_IP}:.ssh/id_rsa"
+                    sh "scp -i $HOME/.ssh/id_rsa ci_cd/Ansible/hosts.yaml ${SSH_USER}@${MASTER_IP}:hosts.yaml"
                     //sh "scp -i $HOME/.ssh/id_rsa ${SSH_KEY} ${SSH_USER}@${WORKER_IP}:.ssh/id_rsa"
                     ansiblePlaybook(
                         playbook: 'ci_cd/Ansible/vm_setup.yml',
