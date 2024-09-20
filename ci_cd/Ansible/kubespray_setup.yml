@@ -1,58 +1,54 @@
 ---
 # ci_cd/Ansible/kubespray_setup.yml
-- name: Deploy Kubernetes Cluster with Kubespray
-  hosts: "{{ master_ip }}"
-  tasks:
-    - name: Clone Kubespray repository
-      git:
-        repo: "https://github.com/kubernetes-sigs/kubespray.git"
-        dest: ~/kubespray
+#- name: Deploy Kubernetes Cluster with Kubespray
+#  hosts: "{{ master_ip }}"
+#  tasks:
+#    - name: Clone Kubespray repository
+#      git:
+#        repo: "https://github.com/kubernetes-sigs/kubespray.git"
+#        dest: ~/kubespray
 
-    - name: Install Kubespray dependencies
-      pip:
-        requirements: ~/kubespray/requirements.txt
-        executable: pip3
+#    - name: Install Kubespray dependencies
+#      pip:
+#        requirements: ~/kubespray/requirements.txt
+#        executable: pip3
 
-    - name: Install additional Python package for Kubespray
-      pip:
-        name: ruamel.yaml
-        executable: pip3
+#    - name: Install additional Python package for Kubespray
+#      pip:
+#        name: ruamel.yaml
+#        executable: pip3
 
-    - name: Copy sample inventory for Kubespray
-      copy:
-        src: ~/kubespray/inventory/sample
-        dest: ~/kubespray/inventory/mycluster
-        remote_src: yes
+#    - name: Copy sample inventory for Kubespray
+#      copy:
+#        src: ~/kubespray/inventory/sample
+#        dest: ~/kubespray/inventory/mycluster
+#        remote_src: yes
 
-    - name: Build inventory from IPs
-      shell: |
-        CONFIG_FILE=~/kubespray/inventory/mycluster/hosts.yaml python3 ~/kubespray/contrib/inventory_builder/inventory.py "{{ ips }}"
-      args:
-        executable: /bin/bash
+#    - name: Build inventory from IPs
+#      shell: |
+#        CONFIG_FILE=~/kubespray/inventory/mycluster/hosts.yaml python3 ~/kubespray/contrib/inventory_builder/inventory.py "{{ ips }}"
+#      args:
+#        executable: /bin/bash
 
-    - name: Replace hosts.yaml with prepared one
-      copy:
-        src: ~/hosts.yaml
-        dest: ~/kubespray/inventory/mycluster/hosts.yaml
-        remote_src: yes
+#    - name: Replace hosts.yaml with prepared one
+#      copy:
+#        src: ~/hosts.yaml
+#        dest: ~/kubespray/inventory/mycluster/hosts.yaml
+#        remote_src: yes
 
-    #- name: Notify Jenkins that cluster deployment started
-    #  debug:
-    #    msg: "Starting Kubernetes cluster deployment using Kubespray..."
+#    - name: Deploy Kubernetes cluster using Kubespray
+#      shell: |
+#        cd ~/kubespray
+#        ~/.local/bin/ansible-playbook -i inventory/mycluster/hosts.yaml cluster.yml -b > ~/kubespray/deploy.log 2>&1
+#      args:
+#        chdir: ~/kubespray
+#        executable: /bin/bash
+#      async: 3600
+#      poll: 60
 
-    - name: Deploy Kubernetes cluster using Kubespray
-      shell: |
-        cd ~/kubespray
-        ~/.local/bin/ansible-playbook -i inventory/mycluster/hosts.yaml cluster.yml -b > ~/kubespray/deploy.log 2>&1
-      args:
-        chdir: ~/kubespray
-        executable: /bin/bash
-      async: 3600
-      poll: 60
-
-    - name: Notify Jenkins that cluster deployment is in progress
-      debug:
-        msg: "Kubernetes cluster deployment is in progress. Check deploy.log for details."
+#    - name: Notify Jenkins that cluster deployment is in progress
+#      debug:
+#        msg: "Kubernetes cluster deployment is in progress. Check deploy.log for details."
 
     - name: Create .kube directory
       file:
