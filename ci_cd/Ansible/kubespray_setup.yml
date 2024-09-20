@@ -71,3 +71,7 @@
     - name: Uncordon all nodes
       shell: |
         kubectl uncordon $(kubectl get nodes --no-headers -o custom-columns=":metadata.name")
+
+    - name: Apply K8s manifests
+      shell: |
+        kubectl apply -f ~/K8s/
