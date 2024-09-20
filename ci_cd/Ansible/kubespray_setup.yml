@@ -38,7 +38,7 @@
 
     - name: Deploy Kubernetes cluster using Kubespray
       shell: |
-        ansible-playbook -i ~/kubespray/inventory/mycluster/hosts.yaml ~/kubespray/cluster.yml -b -v
+        export PATH=$PATH:/home/moon/.local/bin && ansible-playbook -i ~/kubespray/inventory/mycluster/hosts.yaml ~/kubespray/cluster.yml -b -v
       args:
         executable: /bin/bash
 
