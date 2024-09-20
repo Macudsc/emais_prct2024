@@ -74,4 +74,5 @@
 
     - name: Apply K8s manifests
       shell: |
-        kubectl apply -f ~/K8s/
+        cd ~/K8s
+        kubectl apply -f namespace.yml && kubectl apply -f postgres-pvc.yml && kubectl apply -f postgres-deployment.yml && kubectl apply -f mongo-pvc.yml && kubectl apply -f mongo-deployment.yml && kubectl apply -f app-deployment.yml
