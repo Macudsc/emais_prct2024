@@ -36,13 +36,23 @@
         dest: ~/kubespray/inventory/mycluster/hosts.yaml
         remote_src: yes
 
+    #- name: Notify Jenkins that cluster deployment started
+    #  debug:
+    #    msg: "Starting Kubernetes cluster deployment using Kubespray..."
+
     - name: Deploy Kubernetes cluster using Kubespray
       shell: |
         cd ~/kubespray
-        ~/.local/bin/ansible-playbook -i inventory/mycluster/hosts.yaml cluster.yml -b -v
+        ~/.local/bin/ansible-playbook -i inventory/mycluster/hosts.yaml cluster.yml -b > ~/kubespray/deploy.log 2>&1
       args:
         chdir: ~/kubespray
         executable: /bin/bash
+      async: 3600
+      poll: 60
+
+    - name: Notify Jenkins that cluster deployment is in progress
+      debug:
+        msg: "Kubernetes cluster deployment is in progress. Check deploy.log for details."
 
     - name: Create .kube directory
       file:
