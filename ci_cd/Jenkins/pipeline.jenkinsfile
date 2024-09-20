@@ -52,7 +52,7 @@ pipeline {
           curl -sL https://storage.yandexcloud.net/yandexcloud-yc/install.sh | bash
           export PATH=$PATH:/home/jenkins/yandex-cloud/bin
           # echo "PATH=$PATH"
-          yc vpc network list --format json
+          # yc vpc network list --format json
         '''
       }
     }
@@ -97,20 +97,20 @@ pipeline {
             }
         }
     }
-    //stage('Plan and Apply Infrastructure') {
-    //    when {
-    //        expression { return env.INFRA_EXISTS == 'false' }
-    //    }
-    //    steps {
-    //        script {
-    //            dir('ci_cd/Terraform') {
-    //                sh 'terraform init'
-    //                sh 'terraform plan -var-file=vars.tfvars -var-file=creds.tfvars -out=tfplan'
-    //                sh 'terraform apply -auto-approve tfplan'
-    //            }
-    //        }
-    //    }
-    //}
+    stage('Plan and Apply Infrastructure') {
+        when {
+            expression { return env.INFRA_EXISTS == 'false' }
+        }
+        steps {
+            script {
+                dir('ci_cd/Terraform') {
+                    sh 'terraform init'
+                    sh 'terraform plan -var-file=vars.tfvars -var-file=creds.tfvars -out=tfplan'
+                    sh 'terraform apply -auto-approve tfplan'
+                }
+            }
+        }
+    }
 
     //// Добавить сбор внутренних адресов
     //stage('Fetch VM IPs') {
