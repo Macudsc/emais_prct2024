@@ -125,7 +125,7 @@ pipeline {
                 //echo "JSON Output: ${jsonOutput}"
 
                 masterIp = sh(script: """
-                    echo '${jsonOutput}' | jq -r '.[] | select(.name | startswith("k8s-master-")) | .network_interfaces[0].primary_v4_address.one_to_one_nat.address' > /dev/null 2>&1
+                    echo '${jsonOutput}' | jq -r '.[] | select(.name | startswith("k8s-master-")) | .network_interfaces[0].primary_v4_address.one_to_one_nat.address'
                 """, returnStdout: true).trim()
                 
                 workerIp = sh(script: """
@@ -162,56 +162,53 @@ pipeline {
         }
     }
     //===
-    //// Стадия запуска плейбука на виртуалках
-    //stage('Deploy VM Setup') {
-    //    steps {
-    //        withCredentials([sshUserPrivateKey(credentialsId: 'vm-ssh-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
-    //            script {
-    //                // Добавляем ключи хостов + ключ для будущих манипуляций кластером
-    //                if (env.INFRA_EXISTS == 'false') {
-    //                    sh """
-    //                        echo 'Новая инфраструктура...'
-    //                        sleep 40
-    //                        ssh-keyscan -H ${MASTER_IP} >> ~/.ssh/known_hosts
-    //                        ssh-keyscan -H ${WORKER_IP} >> ~/.ssh/known_hosts
-    //                        sleep 10
-    //                        scp -i $HOME/.ssh/id_rsa ${SSH_KEY} ${SSH_USER}@${MASTER_IP}:.ssh/id_rsa
-    //                        scp -i $HOME/.ssh/id_rsa ${SSH_KEY} ${SSH_USER}@${WORKER_IP}:.ssh/id_rsa
-    //                    """
-    //                } else {
-    //                    sh """
-    //                        scp -i $HOME/.ssh/id_rsa ci_cd/Ansible/hosts.yaml ${SSH_USER}@${MASTER_IP}:hosts.yaml
-    //                        ssh-keyscan -H ${MASTER_IP} >> ~/.ssh/known_hosts
-    //                        ssh-keyscan -H ${WORKER_IP} >> ~/.ssh/known_hosts
-    //                    """
-    //                }
-
-    //               //sh 'cat ~/.ssh/known_hosts | tail -n 2'
-
-    //                ansiblePlaybook(
-    //                    playbook: 'ci_cd/Ansible/vm_setup.yml',
-    //                    inventory: "${MASTER_IP},${WORKER_IP},",
-    //                    extras: '-e ansible_user=$SSH_USER -e ansible_ssh_private_key_file=$SSH_KEY',
-    //                    colorized: true
-    //                )
-    //            }
-    //        }
-    //    }
-    //}
-    //// Стадия для подготовки Кубспрея
-    //stage('Prepare Kubespray') {
-    //    steps {
-    //        withCredentials([sshUserPrivateKey(credentialsId: 'jenkins-node-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER'), sshUserPrivateKey(credentialsId: 'vm-ssh-key', keyFileVariable: 'VM_SSH_KEY', usernameVariable: 'VM_SSH_USER')]) {
-    //            script {
-    //                ansiblePlaybook(
-    //                    playbook: 'ci_cd/Ansible/kubespray_setup.yml',
-    //                    inventory: "localhost",
-    //                    extras: "-e ansible_user=${SSH_USER} -e ansible_ssh_private_key_file=${SSH_KEY} -e master_ip=${MASTER_IP} -e worker_ip=${WORKER_IP} -e vm_ssh_user=${VM_SSH_USER} -e vm_ssh_key=${VM_SSH_KEY}"
-    //                )
-    //            }
-    //        }
-    //    }
-    //}
+    // Стадия запуска плейбука на виртуалках
+    stage('Deploy VM Setup') {
+        steps {
+            withCredentials([sshUserPrivateKey(credentialsId: 'vm-ssh-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
+                script {
+                    // Добавляем ключи хостов + ключ для будущих манипуляций кластером
+                    if (env.INFRA_EXISTS == 'false') {
+                        sh """
+                            echo 'Новая инфраструктура...'
+                            sleep 40
+                            ssh-keyscan -H ${MASTER_IP} >> ~/.ssh/known_hosts
+                            ssh-keyscan -H ${WORKER_IP} >> ~/.ssh/known_hosts
+                            sleep 10
+                            scp -i $HOME/.ssh/id_rsa ${SSH_KEY} ${SSH_USER}@${MASTER_IP}:.ssh/id_rsa
+                            scp -i $HOME/.ssh/id_rsa ${SSH_KEY} ${SSH_USER}@${WORKER_IP}:.ssh/id_rsa
+                        """
+                    } else {
+                        sh """
+                            scp -i $HOME/.ssh/id_rsa ci_cd/Ansible/hosts.yaml ${SSH_USER}@${MASTER_IP}:hosts.yaml
+                            ssh-keyscan -H ${MASTER_IP} >> ~/.ssh/known_hosts
+                            ssh-keyscan -H ${WORKER_IP} >> ~/.ssh/known_hosts
+                        """
+                    }
+                    ansiblePlaybook(
+                        playbook: 'ci_cd/Ansible/vm_setup.yml',
+                        inventory: "${MASTER_IP},${WORKER_IP},",
+                        extras: '-e ansible_user=$SSH_USER -e ansible_ssh_private_key_file=$SSH_KEY',
+                        colorized: true
+                    )
+                }
+            }
+        }
+    }
+    // Стадия для подготовки Кубспрея
+    stage('Prepare Kubespray') {
+        steps {
+            withCredentials([sshUserPrivateKey(credentialsId: 'vm-ssh-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
+                script {
+                    ansiblePlaybook(
+                        playbook: 'ci_cd/Ansible/kubespray_setup.yml',
+                        inventory: "${MASTER_IP}",
+                        extras: "-e ansible_user=${SSH_USER} -e ansible_ssh_private_key_file=${SSH_KEY} -e ips=${MASTER_IP},${WORKER_IP}"
+                    )
+                }
+            }
+        }
+    }
 
     //stage('Fetch and Replace kubeconfig') {
     //    steps {
@@ -227,8 +224,6 @@ pipeline {
     //        }
     //    }
     //}
-
-    ////===
     //stage('Deploy to K8s') {
     //  steps {
     //    script {
