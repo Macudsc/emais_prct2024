@@ -51,10 +51,8 @@ pipeline {
         sh '''
           curl -sL https://storage.yandexcloud.net/yandexcloud-yc/install.sh | bash
           export PATH=$PATH:/home/jenkins/yandex-cloud/bin
-          echo "PATH=$PATH"
+          # echo "PATH=$PATH"
           yc vpc network list --format json
-          yc vpc subnet list --format json
-          yc vpc address list --format json
         '''
       }
     }
@@ -67,7 +65,7 @@ pipeline {
                     def networkExists = sh(
                         script: 'yc vpc network list --format json | jq -e \'.[] | select(.name == "network1")\'',
                         returnStatus: true,
-                        quiet: true
+                        returnStdout: false
                     ) == 0
 
                     // Проверка наличия подсети
@@ -185,6 +183,8 @@ pipeline {
                     } else {
                         sh """
                             scp -i $HOME/.ssh/id_rsa ci_cd/Ansible/hosts.yaml ${SSH_USER}@${MASTER_IP}:hosts.yaml
+                            scp -i $HOME/.ssh/id_rsa ci_cd/Ansible/hosts.yaml ${SSH_USER}@${WORKER_IP}:hosts.yaml
+
                             ssh-keyscan -H ${MASTER_IP} >> ~/.ssh/known_hosts
                             ssh-keyscan -H ${WORKER_IP} >> ~/.ssh/known_hosts
                         """
