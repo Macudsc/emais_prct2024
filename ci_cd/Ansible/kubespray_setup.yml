@@ -1,8 +1,8 @@
 ---
 # ci_cd/Ansible/kubespray_setup.yml
-#- name: Deploy Kubernetes Cluster with Kubespray
-#  hosts: "{{ master_ip }}"
-#  tasks:
+- name: Deploy Kubernetes Cluster with Kubespray
+  hosts: "{{ master_ip }}"
+  tasks:
 #    - name: Clone Kubespray repository
 #      git:
 #        repo: "https://github.com/kubernetes-sigs/kubespray.git"
