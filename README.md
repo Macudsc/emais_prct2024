@@ -1,5 +1,7 @@
 # Emais DevOps Workflow
 
+![Workflow](https://github.com/Macudsc/emais_prct2024/blob/dev/EmaisDevOpsWorkflow.png)
+
 Основные стадии Jenkins pipeline:
 - Скачать код проекта из репозитория
 - Собрать образ приложения в Докере
