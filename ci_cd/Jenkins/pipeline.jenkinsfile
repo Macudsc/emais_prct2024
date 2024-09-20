@@ -217,7 +217,7 @@ pipeline {
     stage('Send manifests') {
       steps {
         withCredentials([sshUserPrivateKey(credentialsId: 'vm-ssh-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
-            sript {
+            script {
               sh "scp -i $HOME/.ssh/id_rsa -r ci_cd/K8s ${SSH_USER}@${MASTER_IP}:~"
           }
         }
