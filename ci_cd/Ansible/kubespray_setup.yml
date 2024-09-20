@@ -1,7 +1,7 @@
 ---
 # ci_cd/Ansible/kubespray_setup.yml
 - name: Deploy Kubernetes Cluster with Kubespray
-  hosts: {{ master_ip }}
+  hosts: "{{ master_ip }}"
   tasks:
     - name: Clone Kubespray repository
       git:
@@ -26,7 +26,7 @@
 
     - name: Build inventory from IPs
       shell: |
-        CONFIG_FILE=~/kubespray/inventory/mycluster/hosts.yaml python3 ~/kubespray/contrib/inventory_builder/inventory.py ${MASTER_IP} ${WORKER_IP}
+        CONFIG_FILE=~/kubespray/inventory/mycluster/hosts.yaml python3 ~/kubespray/contrib/inventory_builder/inventory.py "{{ ips }}"
       args:
         executable: /bin/bash
 
