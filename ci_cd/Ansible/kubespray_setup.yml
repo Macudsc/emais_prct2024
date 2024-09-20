@@ -34,6 +34,7 @@
       copy:
         src: ~/hosts.yaml
         dest: ~/kubespray/inventory/mycluster/hosts.yaml
+        remote_src: yes
 
     #- name: Deploy Kubernetes cluster using Kubespray
     #  shell: |
