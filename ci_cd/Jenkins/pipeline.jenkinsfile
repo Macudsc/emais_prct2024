@@ -112,56 +112,56 @@ pipeline {
         }
     }
 
-    //// Добавить сбор внутренних адресов
-    //stage('Fetch VM IPs') {
-    //    steps {
-    //        script {
-    //            def masterIp = ""
-    //            def workerIp = ""
-    //            def masterInternalIp = ""
-    //            def workerInternalIp = ""
+    // Добавить сбор внутренних адресов
+    stage('Fetch VM IPs') {
+        steps {
+            script {
+                def masterIp = ""
+                def workerIp = ""
+                def masterInternalIp = ""
+                def workerInternalIp = ""
 
-    //            def jsonOutput = sh(script: 'yc compute instance list --format json', returnStdout: true).trim()
-    //            //echo "JSON Output: ${jsonOutput}"
+                def jsonOutput = sh(script: 'yc compute instance list --format json', returnStdout: true).trim()
+                //echo "JSON Output: ${jsonOutput}"
 
-    //            masterIp = sh(script: """
-    //                echo '${jsonOutput}' | jq -r '.[] | select(.name | startswith("k8s-master-")) | .network_interfaces[0].primary_v4_address.one_to_one_nat.address'
-    //            """, returnStdout: true).trim()
+                masterIp = sh(script: """
+                    echo '${jsonOutput}' | jq -r '.[] | select(.name | startswith("k8s-master-")) | .network_interfaces[0].primary_v4_address.one_to_one_nat.address' > /dev/null 2>&1
+                """, returnStdout: true).trim()
                 
-    //            workerIp = sh(script: """
-    //                echo '${jsonOutput}' | jq -r '.[] | select(.name | startswith("k8s-worker-")) | .network_interfaces[0].primary_v4_address.one_to_one_nat.address'
-    //            """, returnStdout: true).trim()
+                workerIp = sh(script: """
+                    echo '${jsonOutput}' | jq -r '.[] | select(.name | startswith("k8s-worker-")) | .network_interfaces[0].primary_v4_address.one_to_one_nat.address'
+                """, returnStdout: true).trim()
 
-    //            masterInternalIp = sh(script: """
-    //                echo '${jsonOutput}' | jq -r '.[] | select(.name | startswith("k8s-master-")) | .network_interfaces[0].primary_v4_address.address'
-    //            """, returnStdout: true).trim()
+                masterInternalIp = sh(script: """
+                    echo '${jsonOutput}' | jq -r '.[] | select(.name | startswith("k8s-master-")) | .network_interfaces[0].primary_v4_address.address'
+                """, returnStdout: true).trim()
 
-    //            workerInternalIp = sh(script: """
-    //                echo '${jsonOutput}' | jq -r '.[] | select(.name | startswith("k8s-worker-")) | .network_interfaces[0].primary_v4_address.address'
-    //            """, returnStdout: true).trim()
+                workerInternalIp = sh(script: """
+                    echo '${jsonOutput}' | jq -r '.[] | select(.name | startswith("k8s-worker-")) | .network_interfaces[0].primary_v4_address.address'
+                """, returnStdout: true).trim()
 
-    //            echo "Master IP: ${masterIp}, Internal IP: ${masterInternalIp}"
-    //            echo "Worker IP: ${workerIp}, Internal IP: ${workerInternalIp}"
+                echo "Master IP: ${masterIp}, Internal IP: ${masterInternalIp}"
+                echo "Worker IP: ${workerIp}, Internal IP: ${workerInternalIp}"
 
-    //            env.MASTER_IP = masterIp
-    //            env.WORKER_IP = workerIp
-    //            env.MASTER_INTERNALIP = masterInternalIp
-    //            env.WORKER_INTERNALIP = workerInternalIp
+                env.MASTER_IP = masterIp
+                env.WORKER_IP = workerIp
+                env.MASTER_INTERNALIP = masterInternalIp
+                env.WORKER_INTERNALIP = workerInternalIp
 
-    //        }
-    //    }
-    //}
-    //stage('Generate Kubespray Inventory') {
-    //    steps {
-    //        script {
-    //            sh """
-    //            sed 's|{{ master_internalIp }}|${env.MASTER_INTERNALIP}|' ci_cd/Ansible/hosts.yaml.template | \
-    //            sed 's|{{ worker_internalIp }}|${env.WORKER_INTERNALIP}|' > ci_cd/Ansible/hosts.yaml
-    //            """
-    //        }
-    //    }
-    //}
-    ////===
+            }
+        }
+    }
+    stage('Generate Kubespray Inventory') {
+        steps {
+            script {
+                sh """
+                sed 's|{{ master_internalIp }}|${env.MASTER_INTERNALIP}|' ci_cd/Ansible/hosts.yaml.template | \
+                sed 's|{{ worker_internalIp }}|${env.WORKER_INTERNALIP}|' > ci_cd/Ansible/hosts.yaml
+                """
+            }
+        }
+    }
+    //===
     //// Стадия запуска плейбука на виртуалках
     //stage('Deploy VM Setup') {
     //    steps {
