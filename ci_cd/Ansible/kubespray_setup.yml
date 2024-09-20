@@ -36,30 +36,30 @@
         dest: ~/kubespray/inventory/mycluster/hosts.yaml
         remote_src: yes
 
-    #- name: Deploy Kubernetes cluster using Kubespray
-    #  shell: |
-    #    ansible-playbook -i ~/kubespray/inventory/mycluster/hosts.yaml ~/kubespray/cluster.yml -b -v
-    #  args:
-    #    executable: /bin/bash
+    - name: Deploy Kubernetes cluster using Kubespray
+      shell: |
+        ansible-playbook -i ~/kubespray/inventory/mycluster/hosts.yaml ~/kubespray/cluster.yml -b -v
+      args:
+        executable: /bin/bash
 
-    #- name: Create .kube directory
-    #  file:
-    #    path: ~/.kube
-    #    state: directory
+    - name: Create .kube directory
+      file:
+        path: ~/.kube
+        state: directory
 
-    #- name: Copy admin kubeconfig
-    #  command: sudo cp /etc/kubernetes/admin.conf ~/.kube/config
+    - name: Copy admin kubeconfig
+      command: sudo cp /etc/kubernetes/admin.conf ~/.kube/config
 
-    #- name: Change ownership of kubeconfig
-    #  command: sudo chown $(id -u):$(id -g) ~/.kube/config
+    - name: Change ownership of kubeconfig
+      command: sudo chown $(id -u):$(id -g) ~/.kube/config
 
-    #- name: Apply Local Path Provisioner
-    #  command: kubectl apply -f https://raw.githubusercontent.com/rancher/local-path-provisioner/master/deploy/local-path-storage.yaml
+    - name: Apply Local Path Provisioner
+      command: kubectl apply -f https://raw.githubusercontent.com/rancher/local-path-provisioner/master/deploy/local-path-storage.yaml
 
-    #- name: Patch Local Path storage class to be default
-    #  shell: |
-    #    kubectl patch storageclass local-path -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
+    - name: Patch Local Path storage class to be default
+      shell: |
+        kubectl patch storageclass local-path -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
 
-    #- name: Uncordon all nodes
-    #  shell: |
-    #    kubectl uncordon $(kubectl get nodes --no-headers -o custom-columns=":metadata.name")
+    - name: Uncordon all nodes
+      shell: |
+        kubectl uncordon $(kubectl get nodes --no-headers -o custom-columns=":metadata.name")
