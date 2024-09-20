@@ -171,7 +171,7 @@ pipeline {
                     if (env.INFRA_EXISTS == 'false') {
                         sh """
                             echo 'Новая инфраструктура...'
-                            sleep 40
+                            sleep 50
                             ssh-keyscan -H ${MASTER_IP} >> ~/.ssh/known_hosts
                             ssh-keyscan -H ${WORKER_IP} >> ~/.ssh/known_hosts
                             sleep 10
@@ -210,34 +210,34 @@ pipeline {
         }
     }
 
-    //stage('Fetch and Replace kubeconfig') {
-    //    steps {
-    //        withCredentials([sshUserPrivateKey(credentialsId: 'vm-ssh-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
-    //            script {
-    //                sh """
-    //                    scp -i ${SSH_KEY} ${SSH_USER}@${MASTER_IP}:/home/moon/.kube/config /tmp/kubeconfig
-    //                """
-    //                sh """
-    //                    sed -i 's|https://127.0.0.1:6443|https://${MASTER_IP}:6443|g' /tmp/kubeconfig
-    //                """
-    //            }
-    //        }
-    //    }
-    //}
-    //stage('Deploy to K8s') {
-    //  steps {
-    //    script {
-    //      sh 'curl -LO "https://storage.googleapis.com/kubernetes-release/release/v1.20.5/bin/linux/amd64/kubectl"'
-    //      sh 'chmod u+x ./kubectl'  
-    //      sh "./kubectl --kubeconfig=${KUBECONFIG_FILE} apply -f ci_cd/K8s/namespace.yml"
-    //      sh "./kubectl --kubeconfig=${KUBECONFIG_FILE} apply -f ci_cd/K8s/postgres-pvc.yml"
-    //      sh "./kubectl --kubeconfig=${KUBECONFIG_FILE} apply -f ci_cd/K8s/postgres-deployment.yml"
-    //      sh "./kubectl --kubeconfig=${KUBECONFIG_FILE} apply -f ci_cd/K8s/mongo-pvc.yml"
-    //      sh "./kubectl --kubeconfig=${KUBECONFIG_FILE} apply -f ci_cd/K8s/mongo-deployment.yml"
-    //      sh "./kubectl --kubeconfig=${KUBECONFIG_FILE} apply -f ci_cd/K8s/app-deployment.yml"
-    //    }
-    //  }
-    //}
+    stage('Fetch and Replace kubeconfig') {
+        steps {
+            withCredentials([sshUserPrivateKey(credentialsId: 'vm-ssh-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
+                script {
+                    sh """
+                        scp -i ${SSH_KEY} ${SSH_USER}@${MASTER_IP}:/home/moon/.kube/config /tmp/kubeconfig
+                    """
+                    sh """
+                        sed -i 's|https://127.0.0.1:6443|https://${MASTER_IP}:6443|g' /tmp/kubeconfig
+                    """
+                }
+            }
+        }
+    }
+    stage('Deploy to K8s') {
+      steps {
+        script {
+          sh 'curl -LO "https://storage.googleapis.com/kubernetes-release/release/v1.20.5/bin/linux/amd64/kubectl"'
+          sh 'chmod u+x ./kubectl'  
+          sh "./kubectl --kubeconfig=${KUBECONFIG_FILE} apply -f ci_cd/K8s/namespace.yml"
+          sh "./kubectl --kubeconfig=${KUBECONFIG_FILE} apply -f ci_cd/K8s/postgres-pvc.yml"
+          sh "./kubectl --kubeconfig=${KUBECONFIG_FILE} apply -f ci_cd/K8s/postgres-deployment.yml"
+          sh "./kubectl --kubeconfig=${KUBECONFIG_FILE} apply -f ci_cd/K8s/mongo-pvc.yml"
+          sh "./kubectl --kubeconfig=${KUBECONFIG_FILE} apply -f ci_cd/K8s/mongo-deployment.yml"
+          sh "./kubectl --kubeconfig=${KUBECONFIG_FILE} apply -f ci_cd/K8s/app-deployment.yml"
+        }
+      }
+    }
 
     //stage('Build Docker Image PIPELINE') {
     //  steps {
