@@ -71,7 +71,8 @@ pipeline {
                     // Проверка наличия подсети
                     def subnetExists = sh(
                         script: 'yc vpc subnet list --format json | jq -e \'.[] | select(.name == "subnet1")\'',
-                        returnStatus: true
+                        returnStatus: true,
+                        returnStdout: false
                     ) == 0
 
                     // Проверка наличия мастера
@@ -98,110 +99,107 @@ pipeline {
             }
         }
     }
-    stage('Plan and Apply Infrastructure') {
-        when {
-            expression { return env.INFRA_EXISTS == 'false' }
-        }
-        steps {
-            script {
-                dir('ci_cd/Terraform') {
-                    sh 'terraform init'
-                    sh 'terraform plan -var-file=vars.tfvars -var-file=creds.tfvars -out=tfplan'
-                    sh 'terraform apply -auto-approve tfplan'
-                }
-            }
-        }
-    }
+    //stage('Plan and Apply Infrastructure') {
+    //    when {
+    //        expression { return env.INFRA_EXISTS == 'false' }
+    //    }
+    //    steps {
+    //        script {
+    //            dir('ci_cd/Terraform') {
+    //                sh 'terraform init'
+    //                sh 'terraform plan -var-file=vars.tfvars -var-file=creds.tfvars -out=tfplan'
+    //                sh 'terraform apply -auto-approve tfplan'
+    //            }
+    //        }
+    //    }
+    //}
 
-    // Добавить сбор внутренних адресов
-    stage('Fetch VM IPs') {
-        steps {
-            script {
-                def masterIp = ""
-                def workerIp = ""
-                def masterInternalIp = ""
-                def workerInternalIp = ""
+    //// Добавить сбор внутренних адресов
+    //stage('Fetch VM IPs') {
+    //    steps {
+    //        script {
+    //            def masterIp = ""
+    //            def workerIp = ""
+    //            def masterInternalIp = ""
+    //            def workerInternalIp = ""
 
-                def jsonOutput = sh(script: 'yc compute instance list --format json', returnStdout: true).trim()
-                //echo "JSON Output: ${jsonOutput}"
+    //            def jsonOutput = sh(script: 'yc compute instance list --format json', returnStdout: true).trim()
+    //            //echo "JSON Output: ${jsonOutput}"
 
-                masterIp = sh(script: """
-                    echo '${jsonOutput}' | jq -r '.[] | select(.name | startswith("k8s-master-")) | .network_interfaces[0].primary_v4_address.one_to_one_nat.address'
-                """, returnStdout: true).trim()
+    //            masterIp = sh(script: """
+    //                echo '${jsonOutput}' | jq -r '.[] | select(.name | startswith("k8s-master-")) | .network_interfaces[0].primary_v4_address.one_to_one_nat.address'
+    //            """, returnStdout: true).trim()
                 
-                workerIp = sh(script: """
-                    echo '${jsonOutput}' | jq -r '.[] | select(.name | startswith("k8s-worker-")) | .network_interfaces[0].primary_v4_address.one_to_one_nat.address'
-                """, returnStdout: true).trim()
+    //            workerIp = sh(script: """
+    //                echo '${jsonOutput}' | jq -r '.[] | select(.name | startswith("k8s-worker-")) | .network_interfaces[0].primary_v4_address.one_to_one_nat.address'
+    //            """, returnStdout: true).trim()
 
-                masterInternalIp = sh(script: """
-                    echo '${jsonOutput}' | jq -r '.[] | select(.name | startswith("k8s-master-")) | .network_interfaces[0].primary_v4_address.address'
-                """, returnStdout: true).trim()
+    //            masterInternalIp = sh(script: """
+    //                echo '${jsonOutput}' | jq -r '.[] | select(.name | startswith("k8s-master-")) | .network_interfaces[0].primary_v4_address.address'
+    //            """, returnStdout: true).trim()
 
-                workerInternalIp = sh(script: """
-                    echo '${jsonOutput}' | jq -r '.[] | select(.name | startswith("k8s-worker-")) | .network_interfaces[0].primary_v4_address.address'
-                """, returnStdout: true).trim()
+    //            workerInternalIp = sh(script: """
+    //                echo '${jsonOutput}' | jq -r '.[] | select(.name | startswith("k8s-worker-")) | .network_interfaces[0].primary_v4_address.address'
+    //            """, returnStdout: true).trim()
 
-                echo "Master IP: ${masterIp}, Internal IP: ${masterInternalIp}"
-                echo "Worker IP: ${workerIp}, Internal IP: ${workerInternalIp}"
+    //            echo "Master IP: ${masterIp}, Internal IP: ${masterInternalIp}"
+    //            echo "Worker IP: ${workerIp}, Internal IP: ${workerInternalIp}"
 
-                env.MASTER_IP = masterIp
-                env.WORKER_IP = workerIp
-                env.MASTER_INTERNALIP = masterInternalIp
-                env.WORKER_INTERNALIP = workerInternalIp
+    //            env.MASTER_IP = masterIp
+    //            env.WORKER_IP = workerIp
+    //            env.MASTER_INTERNALIP = masterInternalIp
+    //            env.WORKER_INTERNALIP = workerInternalIp
 
-            }
-        }
-    }
-    stage('Generate Kubespray Inventory') {
-        steps {
-            script {
-                sh """
-                sed 's|{{ master_internalIp }}|${env.MASTER_INTERNALIP}|' ci_cd/Ansible/hosts.yaml.template | \
-                sed 's|{{ worker_internalIp }}|${env.WORKER_INTERNALIP}|' > ci_cd/Ansible/hosts.yaml
-                """
-            }
-        }
-    }
-    //===
-    // Стадия запуска плейбука на виртуалках
-    stage('Deploy VM Setup') {
-        steps {
-            withCredentials([sshUserPrivateKey(credentialsId: 'vm-ssh-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
-                script {
-                    // Добавляем ключи хостов + ключ для будущих манипуляций кластером
-                    if (env.INFRA_EXISTS == 'false') {
-                        sh """
-                            echo 'Новая инфраструктура...'
-                            sleep 40
-                            ssh-keyscan -H ${MASTER_IP} >> ~/.ssh/known_hosts
-                            ssh-keyscan -H ${WORKER_IP} >> ~/.ssh/known_hosts
-                            sleep 10
-                            scp -i $HOME/.ssh/id_rsa ${SSH_KEY} ${SSH_USER}@${MASTER_IP}:.ssh/id_rsa
-                            
-                            scp -i $HOME/.ssh/id_rsa ${SSH_KEY} ${SSH_USER}@${WORKER_IP}:.ssh/id_rsa
-                        """
-                    } else {
-                        sh """
-                            scp -i $HOME/.ssh/id_rsa ci_cd/Ansible/hosts.yaml ${SSH_USER}@${MASTER_IP}:hosts.yaml
-                            scp -i $HOME/.ssh/id_rsa ci_cd/Ansible/hosts.yaml ${SSH_USER}@${WORKER_IP}:hosts.yaml
+    //        }
+    //    }
+    //}
+    //stage('Generate Kubespray Inventory') {
+    //    steps {
+    //        script {
+    //            sh """
+    //            sed 's|{{ master_internalIp }}|${env.MASTER_INTERNALIP}|' ci_cd/Ansible/hosts.yaml.template | \
+    //            sed 's|{{ worker_internalIp }}|${env.WORKER_INTERNALIP}|' > ci_cd/Ansible/hosts.yaml
+    //            """
+    //        }
+    //    }
+    //}
+    ////===
+    //// Стадия запуска плейбука на виртуалках
+    //stage('Deploy VM Setup') {
+    //    steps {
+    //        withCredentials([sshUserPrivateKey(credentialsId: 'vm-ssh-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
+    //            script {
+    //                // Добавляем ключи хостов + ключ для будущих манипуляций кластером
+    //                if (env.INFRA_EXISTS == 'false') {
+    //                    sh """
+    //                        echo 'Новая инфраструктура...'
+    //                        sleep 40
+    //                        ssh-keyscan -H ${MASTER_IP} >> ~/.ssh/known_hosts
+    //                        ssh-keyscan -H ${WORKER_IP} >> ~/.ssh/known_hosts
+    //                        sleep 10
+    //                        scp -i $HOME/.ssh/id_rsa ${SSH_KEY} ${SSH_USER}@${MASTER_IP}:.ssh/id_rsa
+    //                        scp -i $HOME/.ssh/id_rsa ${SSH_KEY} ${SSH_USER}@${WORKER_IP}:.ssh/id_rsa
+    //                    """
+    //                } else {
+    //                    sh """
+    //                        scp -i $HOME/.ssh/id_rsa ci_cd/Ansible/hosts.yaml ${SSH_USER}@${MASTER_IP}:hosts.yaml
+    //                        ssh-keyscan -H ${MASTER_IP} >> ~/.ssh/known_hosts
+    //                        ssh-keyscan -H ${WORKER_IP} >> ~/.ssh/known_hosts
+    //                    """
+    //                }
 
-                            ssh-keyscan -H ${MASTER_IP} >> ~/.ssh/known_hosts
-                            ssh-keyscan -H ${WORKER_IP} >> ~/.ssh/known_hosts
-                        """
-                    }
+    //               //sh 'cat ~/.ssh/known_hosts | tail -n 2'
 
-                   //sh 'cat ~/.ssh/known_hosts | tail -n 2'
-
-                    ansiblePlaybook(
-                        playbook: 'ci_cd/Ansible/vm_setup.yml',
-                        inventory: "${MASTER_IP},${WORKER_IP},",
-                        extras: '-e ansible_user=$SSH_USER -e ansible_ssh_private_key_file=$SSH_KEY',
-                        colorized: true
-                    )
-                }
-            }
-        }
-    }
+    //                ansiblePlaybook(
+    //                    playbook: 'ci_cd/Ansible/vm_setup.yml',
+    //                    inventory: "${MASTER_IP},${WORKER_IP},",
+    //                    extras: '-e ansible_user=$SSH_USER -e ansible_ssh_private_key_file=$SSH_KEY',
+    //                    colorized: true
+    //                )
+    //            }
+    //        }
+    //    }
+    //}
     //// Стадия для подготовки Кубспрея
     //stage('Prepare Kubespray') {
     //    steps {

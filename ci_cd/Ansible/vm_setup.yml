@@ -66,6 +66,3 @@
         name: "{{ ansible_user }}"
         groups: docker
         append: yes
-
-    - name: echo
-      shell: cat /home/moon/hosts.yaml
