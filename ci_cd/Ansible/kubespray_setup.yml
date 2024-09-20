@@ -59,7 +59,7 @@
       command: sudo cp /etc/kubernetes/admin.conf ~/.kube/config
 
     - name: Change ownership of kubeconfig
-      command: sudo chown $(id -u):$(id -g) ~/.kube/config
+      command: /bin/bash -c "sudo chown $(id -u):$(id -g) ~/.kube/config"
 
     - name: Apply Local Path Provisioner
       command: kubectl apply -f https://raw.githubusercontent.com/rancher/local-path-provisioner/master/deploy/local-path-storage.yaml
